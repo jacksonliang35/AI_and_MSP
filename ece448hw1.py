@@ -10,20 +10,25 @@ class maze:
          # self.tree=[] ---> What's this?
          self.startx = -1
          self.starty = -1
-         self.cost = -1
+         self.dfscost = -1
+         self.dfspath = []
          return
          
-    def readmaze(self,filename):
+    def readMaze(self,filename):
          self.graph= []
          with open(filename,"r") as fp:
              for line in fp:
-                 self.graph.append(line[0:len(line)-1])
+                 self.graph.append(list(line[0:len(line)-1]))
          fp.close()
          self.height = len(self.graph)
          self.width = len(self.graph[0])
          self.getStart()
          return
-         
+    
+    def printMaze(self):
+        for line in self.graph:
+            print(''.join(line))
+     
     def getStart(self):
         for i in range(self.height):
             for j in range(self.width):
@@ -31,6 +36,7 @@ class maze:
                    self.startx=i
                    self.starty=j
                    break
+        return
 
     def findGoals(self):
         for i in range(self.height):
@@ -38,6 +44,7 @@ class maze:
                 if self.graph[i][j]== '.':
                     self.goalx += [i]
                     self.goaly += [j]
+        return
 
     def canTravel(self,x, y, dir):
          if (x < 0) or (y < 0) or (x >= self.height) or (y >= self.width):
@@ -54,50 +61,74 @@ class maze:
              return (self.graph[x][y+1]!='%')
          return False
          
+    def drawPath(self):
+         path = self.dfspath.copy()
+         curx = self.startx
+         cury = self.starty
+         for x in path:
+             if x==0:
+                 curx -= 1
+                 self.graph[curx][cury] = '.'
+             elif x==1:
+                 curx += 1
+                 self.graph[curx][cury] = '.'
+             elif x==2:
+                 cury -= 1
+                 self.graph[curx][cury] = '.'
+             else:
+                 cury += 1
+                 self.graph[curx][cury] = '.'
+         return
+         
     def DFS(self):
         # Use list as stack, find single goal, change maze, return nodes expanded
-        graph = self.graph  # Is this a reference or a copy?      
-        x = graph.startx
-        y = graph.starty
-        cost = 0
+        graph = self.graph  # Is this a reference or a copy?
+        x = self.startx
+        y = self.starty
         node = 0
         if x==-1 or y==-1:
             return -1
-        path = [(x,y)]
-        while(path!=[]):
-            curr = path.pop()
+        stack = [(x,y,[])]   # tuple = (x-cood,y-cood,path)
+        while(stack!=[]):
+            curr = stack.pop()
             x = curr[0]
             y = curr[1]
             node += 1
             if graph[x][y]=='.':
                 self.graph = graph
-                self.cost = cost
+                self.dfspath = curr[2]
+                self.dfscost = len(curr[2])
+                # Reset Graph
+                for line in graph:
+                    for x in line:
+                        if x == '*':
+                            x = ' '
+                graph[self.startx][self.starty] = 'P'
                 return node
             if graph[x][y]=='*':
                 continue
             # Add
             graph[x][y] = '*'
-            cost += 1
             if self.canTravel(x,y,0):
-                path += [(x-1,y)]
+                stack += [(x-1,y,curr[2].copy()+[0])]
             if self.canTravel(x,y,1):
-                path += [(x+1,y)]
+                stack += [(x+1,y,curr[2].copy()+[1])]
             if self.canTravel(x,y,2):
-                path += [(x,y-1)]
+                stack += [(x,y-1,curr[2].copy()+[2])]
             if self.canTravel(x,y,3):
-                path += [(x,y+1)]
+                stack += [(x,y+1,curr[2].copy()+[3])]
         return -1
-        
-    def DFSHelper():
         
 # Main
 a=maze()
-a.readmaze('mediummaze.txt')
-'''    
-for i in range(a.height):
-    print(a.graph[i])
-'''
-    
+a.readMaze('mediummaze.txt')
+a.printMaze()
+
+b = a.DFS()
+print(b)
+
+a.drawPath()
+a.printMaze()
 
 
 		
