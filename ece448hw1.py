@@ -7,9 +7,10 @@ class maze:
          self.graph=[]
          self.height=0
          self.width=0
-         self.path=[]
-         self.tree=[]
-         
+         # self.tree=[] ---> What's this?
+         self.startx = -1
+         self.starty = -1
+         self.cost = -1
          return
          
     def readmaze(self,filename):
@@ -54,16 +55,48 @@ class maze:
          return False
          
     def DFS(self):
-        # Use list as stack, find single goal
+        # Use list as stack, find single goal, change maze, return nodes expanded
+        graph = self.graph  # Is this a reference or a copy?      
+        x = graph.startx
+        y = graph.starty
+        cost = 0
+        node = 0
+        if x==-1 or y==-1:
+            return -1
+        path = [(x,y)]
+        while(path!=[]):
+            curr = path.pop()
+            x = curr[0]
+            y = curr[1]
+            node += 1
+            if graph[x][y]=='.':
+                self.graph = graph
+                self.cost = cost
+                return node
+            if graph[x][y]=='*':
+                continue
+            # Add
+            graph[x][y] = '*'
+            cost += 1
+            if self.canTravel(x,y,0):
+                path += [(x-1,y)]
+            if self.canTravel(x,y,1):
+                path += [(x+1,y)]
+            if self.canTravel(x,y,2):
+                path += [(x,y-1)]
+            if self.canTravel(x,y,3):
+                path += [(x,y+1)]
+        return -1
         
-
-if __name__ == '__main__':
-    a=maze()
-    a.readmaze('mediummaze.txt')
-    '''    
-    for i in range(a.height):
-        print(a.graph[i])
-    '''
+    def DFSHelper():
+        
+# Main
+a=maze()
+a.readmaze('mediummaze.txt')
+'''    
+for i in range(a.height):
+    print(a.graph[i])
+'''
     
 
 
