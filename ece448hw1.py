@@ -45,7 +45,7 @@ class maze:
 			return (self.graph[x-1][y]!='%')
     	if dir == 3 :#right
     		return (self.graph[x+1][y]!='%')
-
+    	return False
 
 a=maze()
 a.readmaze('mediummaze.txt')
