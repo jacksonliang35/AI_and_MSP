@@ -10,8 +10,6 @@ class maze:
          self.explored=[]
          self.path=[]
          self.tree=[]
-         self.goalx = []
-         self.goaly = []
          
          return
 	def readmaze(self,filename):
@@ -23,7 +21,6 @@ class maze:
          self.height = len(self.graph)
          self.width = len(self.graph[0])
          self.getStart()
-         self.getGoals()
          return
 	def getStart(self):
 		for i in range(self.height):
@@ -33,7 +30,7 @@ class maze:
 					self.starty=j
 					break
 
-	def getGoals(self):
+	def findGoals(self):
 		for i in range(self.height):
 			for j in range(self.width):
 				if self.graph[i][j]== '.':
