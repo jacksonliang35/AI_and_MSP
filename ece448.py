@@ -68,8 +68,6 @@ class maze:
 		q = queue.PriorityQueue()
 		discover = dict()
 		self.explored=np.zeros(self.height*self.width)
-		for i in range(self.width*self.height):
-			parent[i]=-1
 		self.explored[self.startx+(self.starty)*self.width]=1
 		q.put((self.heuristic(self.startx, self.starty, self.goalx[0], self.goaly[0]),(self.startx,self.starty)))
 		while not q.empty():
@@ -88,29 +86,24 @@ class maze:
 					self.explored[x+(y-1)*self.width]=1
 					q.put((self.heuristic(x, y-1, self.goalx[0], self.goaly[0]),(x,y-1)))
 					discover[x+(y-1)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+(y-1)*self.width,x+(y)*self.width))
+
 			if self.canTravel(x, y, 1):
 				if self.explored[x+(y+1)*self.width]==0:
 					self.explored[x+(y+1)*self.width]=1
 					q.put((self.heuristic(x, y+1, self.goalx[0], self.goaly[0]),(x,y+1)))
 					discover[x+(y+1)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+(y+1)*self.width,x+(y)*self.width))
+
 			if self.canTravel(x, y, 2):
 				if self.explored[x-1+(y)*self.width]==0:
 					self.explored[x-1+(y)*self.width]=1
 					q.put((self.heuristic(x-1, y, self.goalx[0], self.goaly[0]),(x-1,y)))
 					discover[x-1+(y)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x-1+(y)*self.width,x+(y)*self.width))
+
 			if self.canTravel(x, y, 3):
 				if self.explored[x+1+(y)*self.width]==0:
 					self.explored[x+1+(y)*self.width]=1
 					q.put((self.heuristic(x+1, y, self.goalx[0], self.goaly[0]),(x+1,y)))
 					discover[x+1+(y)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+1+(y)*self.width,x+(y)*self.width))
 			
 		return -1
 
@@ -120,8 +113,6 @@ class maze:
 		q = queue.PriorityQueue()
 		discover = dict()
 		self.explored=np.zeros(self.height*self.width)
-		for i in range(self.width*self.height):
-			parent[i]=-1
 		self.explored[self.startx+(self.starty)*self.width]=1
 		q.put((self.heuristic(self.startx, self.starty, self.goalx[0], self.goaly[0]),(self.startx,self.starty,0)))
 		while not q.empty():
@@ -132,7 +123,6 @@ class maze:
 			cost=temp2[2]
 			x=current[0]
 			y=current[1]
-#			print(current)
 			print("Astarxy",x,y)
 			if current[0] == self.goalx[0] and current[1]==self.goaly[0]:
 				while current != (self.startx,self.starty):
@@ -145,29 +135,22 @@ class maze:
 					self.explored[x+(y-1)*self.width]=1
 					q.put((cost+1+self.heuristic(x, y-1, self.goalx[0], self.goaly[0]),(x,y-1,cost+1)))
 					discover[x+(y-1)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+(y-1)*self.width,x+(y)*self.width))
+
 			if self.canTravel(x, y, 1):
 				if self.explored[x+(y+1)*self.width]==0:
 					self.explored[x+(y+1)*self.width]=1
 					q.put((cost+1+self.heuristic(x, y+1, self.goalx[0], self.goaly[0]),(x,y+1,cost+1)))
 					discover[x+(y+1)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+(y+1)*self.width,x+(y)*self.width))
 			if self.canTravel(x, y, 2):
 				if self.explored[x-1+(y)*self.width]==0:
 					self.explored[x-1+(y)*self.width]=1
 					q.put((cost+1+self.heuristic(x-1, y, self.goalx[0], self.goaly[0]),(x-1,y,cost+1)))
 					discover[x-1+(y)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x-1+(y)*self.width,x+(y)*self.width))
 			if self.canTravel(x, y, 3):
 				if self.explored[x+1+(y)*self.width]==0:
 					self.explored[x+1+(y)*self.width]=1
 					q.put((cost+1+self.heuristic(x+1, y, self.goalx[0], self.goaly[0]),(x+1,y,cost+1)))
 					discover[x+1+(y)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+1+(y)*self.width,x+(y)*self.width))
 			
 		return -1	
 
@@ -177,8 +160,6 @@ class maze:
 		q = queue.Queue() 
 		discover = dict()
 		self.explored=np.zeros(self.height*self.width)
-		for i in range(self.width*self.height):
-			parent[i]=-1
 		self.explored[self.startx+(self.starty)*self.width]=1
 		q.put((self.startx,self.starty))
 		while not q.empty():
@@ -197,29 +178,25 @@ class maze:
 					self.explored[x+(y-1)*self.width]=1
 					q.put((x,y-1))
 					discover[x+(y-1)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+(y-1)*self.width,x+(y)*self.width))
+
 			if self.canTravel(x, y, 1):
 				if self.explored[x+(y+1)*self.width]==0:
 					self.explored[x+(y+1)*self.width]=1
 					q.put((x,y+1))
 					discover[x+(y+1)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+(y+1)*self.width,x+(y)*self.width))
+
 			if self.canTravel(x, y, 2):
 				if self.explored[x-1+(y)*self.width]==0:
 					self.explored[x-1+(y)*self.width]=1
 					q.put((x-1,y))
 					discover[x-1+(y)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x-1+(y)*self.width,x+(y)*self.width))
+
 			if self.canTravel(x, y, 3):
 				if self.explored[x+1+(y)*self.width]==0:
 					self.explored[x+1+(y)*self.width]=1
 					q.put((x+1,y))
 					discover[x+1+(y)*self.width]=x+(y)*self.width
-				#else:
-					#cross.append((x+1+(y)*self.width,x+(y)*self.width))
+
 			
 		return -1
 
