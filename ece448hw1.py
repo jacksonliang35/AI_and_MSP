@@ -1,5 +1,5 @@
 import os
-
+import copy
 
 class maze:
     """docstring for maze"""
@@ -82,7 +82,7 @@ class maze:
          
     def DFS(self):
         # Use list as stack, find single goal, change maze, return nodes expanded
-        graph = self.graph  # Is this a reference or a copy?
+        graph = copy.deepcopy(self.graph)  # Is this a reference or a copy?
         x = self.startx
         y = self.starty
         node = 0
@@ -95,15 +95,8 @@ class maze:
             y = curr[1]
             node += 1
             if graph[x][y]=='.':
-                self.graph = graph
                 self.dfspath = curr[2]
                 self.dfscost = len(curr[2])
-                # Reset Graph
-                for line in graph:
-                    for x in line:
-                        if x == '*':
-                            x = ' '
-                graph[self.startx][self.starty] = 'P'
                 return node
             if graph[x][y]=='*':
                 continue
@@ -119,16 +112,15 @@ class maze:
                 stack += [(x,y+1,curr[2].copy()+[3])]
         return -1
         
-# Main
-a=maze()
-a.readMaze('mediummaze.txt')
-a.printMaze()
-
-b = a.DFS()
-print(b)
-
-a.drawPath()
-a.printMaze()
+if __name__=='__main__':
+    a=maze()
+    a.readMaze('mediummaze.txt')
+    a.printMaze()
+    
+    b = a.DFS()
+    print()
+    a.drawPath()
+    a.printMaze()
 
 
 		
