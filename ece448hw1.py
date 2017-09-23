@@ -1,6 +1,9 @@
 import os
 import copy
 
+def dist(x,y):   # Use Manhattan Distance deltax+deltay as heuristic function, x and y are tuples
+    return abs(x[0]-y[0])+abs(x[1]-y[1])     
+
 class maze:
     """docstring for maze"""
     def __init__(self):
@@ -33,11 +36,13 @@ class maze:
         for i in range(self.height):
             for j in range(self.width):
                 if self.graph[i][j]== 'P':
-                   self.startx=i
-                   self.starty=j
-                   break
-        return
-
+                    self.startx=i
+                    self.starty=j
+                    break
+                if self.startx!=-1:
+                    break
+        return    
+    
     def findGoals(self):
         for i in range(self.height):
             for j in range(self.width):
@@ -111,14 +116,14 @@ class maze:
             if self.canTravel(x,y,3):
                 stack += [(x,y+1,curr[2].copy()+[3])]
         return -1
-        
+         
 if __name__=='__main__':
     a=maze()
-    a.readMaze('mediummaze.txt')
+    a.readMaze('openMaze.txt')
     a.printMaze()
     
     b = a.DFS()
-    print()
+    print(b)
     a.drawPath()
     a.printMaze()
 
