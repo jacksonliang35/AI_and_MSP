@@ -3,6 +3,7 @@ import math
 import numpy as np
 import queue
 import sys
+import copy
 
 class maze:
 	"""docstring for maze"""
@@ -17,6 +18,8 @@ class maze:
 		self.goaly=[]
 		self.startx=0
 		self.starty=0
+		self.dfscost = -1
+		self.dfspath = []
 		return
 	def readmaze(self,filename):
 		self.graph= []
@@ -116,14 +119,14 @@ class maze:
 		self.explored[self.startx+(self.starty)*self.width]=1
 		q.put((self.heuristic(self.startx, self.starty, self.goalx[0], self.goaly[0]),(self.startx,self.starty,0)))
 		while not q.empty():
-			print("here")
+#			print("here")
 			counter+=1
 			temp2= q.get()[1]
 			current=(temp2[0],temp2[1])
 			cost=temp2[2]
 			x=current[0]
 			y=current[1]
-			print("Astarxy",x,y)
+#			print("Astarxy",x,y)
 			if current[0] == self.goalx[0] and current[1]==self.goaly[0]:
 				while current != (self.startx,self.starty):
 					temp = discover[current[0]+current[1]*self.width]
@@ -211,7 +214,62 @@ class maze:
 		f.close()
 		return
 
+	def DFS(self):
+		# Use list as stack, find single goal, change maze, return nodes expanded
+		graph = copy.deepcopy(self.graph)  # Is this a reference or a copy?
+		x = self.startx
+		y = self.starty
+		node = 0
+		if x == -1 or y == -1:
+			return -1
+		stack = [(x, y, [])]  # tuple = (x-cood,y-cood,path)
+		while (stack != []):
+			curr = stack.pop()
+			x = curr[0]
+			y = curr[1]
+			node += 1
+			if graph[x][y] == '.':
+				self.dfspath = curr[2]
+				self.dfscost = len(curr[2])
+				return node
+			if graph[x][y] == '*':
+				continue
+			# Add
+			graph[x][y] = '*'
+			if self.canTravel(y, x, 0):
+				stack += [(x - 1, y, curr[2].copy() + [0])]
+			if self.canTravel(y, x, 1):
+				stack += [(x + 1, y, curr[2].copy() + [1])]
+			if self.canTravel(y, x, 2):
+				stack += [(x, y - 1, curr[2].copy() + [2])]
+			if self.canTravel(y, x, 3):
+				stack += [(x, y + 1, curr[2].copy() + [3])]
+		return -1
 
+	def printMaze(self):
+		print("printMaze")
+		for line in self.graph:
+			print(''.join(line))
+
+
+	def drawPath(self):
+		path = self.dfspath.copy()
+		curx = self.startx
+		cury = self.starty
+		for x in path:
+			if x == 0:
+				curx -= 1
+				self.graph[curx][cury] = '.'
+			elif x == 1:
+				curx += 1
+				self.graph[curx][cury] = '.'
+			elif x == 2:
+				cury -= 1
+				self.graph[curx][cury] = '.'
+			else:
+				cury += 1
+				self.graph[curx][cury] = '.'
+		return
 
 a=maze()
 a.readmaze('mediummaze.txt')
@@ -221,10 +279,14 @@ a.readmaze('mediummaze.txt')
 a.findGoal()
 a.findStart()
 print(a.Astar())
-#print(a.greedy())
-#print(a.bfs())
+print(a.greedy())
+print(a.bfs())
 
 #print(a.graph[21][5])
+b = a.DFS()
+print(b)
+a.drawPath()
+a.printMaze()
 a.drawsol()
 
 
