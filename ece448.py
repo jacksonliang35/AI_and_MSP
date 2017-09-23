@@ -128,12 +128,15 @@ class maze:
 		self.explored[self.startx+(self.starty)*self.width]=1
 		q.put((self.heuristic(self.startx, self.starty, self.goalx[0], self.goaly[0]),(self.startx,self.starty,0)))
 		while not q.empty():
+			print("here")
 			counter+=1
-			current= q.get()[1][0:1]
-			cost=q.get()[1][2]
+			temp2= q.get()[1]
+			current=(temp2[0],temp2[1])
+			cost=temp2[2]
 			x=current[0]
 			y=current[1]
-			print(current)
+#			print(current)
+			print("Astarxy",x,y)
 			if current[0] == self.goalx[0] and current[1]==self.goaly[0]:
 				while current != (self.startx,self.starty):
 					temp = discover[current[0]+current[1]*self.width]
@@ -238,13 +241,13 @@ class maze:
 a=maze()
 a.readmaze('mediummaze.txt')
 
-for i in range(a.height):
-	print(a.graph[i])
+#for i in range(a.height):
+#	print(a.graph[i])
 a.findGoal()
 a.findStart()
 print(a.Astar())
-print(a.greedy())
-print(a.bfs())
+#print(a.greedy())
+#print(a.bfs())
 
 #print(a.graph[21][5])
 a.drawsol()
