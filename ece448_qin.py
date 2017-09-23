@@ -6,9 +6,9 @@ def heuristic(self, x, y, xg, yg):
 	return math.abs(y-yg)+math.abs(x-xg)
 
 def findloop(index, array):
-	a=index
+	a=int(index)
 	while a!=-1:
-		a=array[a]
+		a=int(array[a])
 		if index==array[a]:
 			return True
 	return False
@@ -78,7 +78,6 @@ class maze:
 			parent[i]=-1
 
 		q.put((self.startx,self.starty))
-
 		while not q.empty():
 			current = q.get()
 			print(current)
@@ -88,22 +87,21 @@ class maze:
 				while current != (self.startx,self.starty):
 					path.insert(current)
 					current = parent[current[0]+current[1]*self.width]
-         		return
-        	if self.canTravel(x, y, 0) and not self.findloop(x+(y-1)*self.width):
-        		q.put((x,y-1))
-        		parent[x+(y-1)*self.width] = x+y*self.width
-
-        	if self.canTravel(x, y, 1) and not self.findloop(x+(y+1)*self.width):
-        		q.put((x,y+1))
-        		parent[x+(y+1)*self.width] = x+y*self.width
-
-        	if self.canTravel(x, y, 2) and not self.findloop(x-1+y*self.width):
-        		q.put((x-1,y))
-        		parent[x-1+(y)*self.width] = x+y*self.width
-
-        	if self.canTravel(x, y, 3) and not self.findloop(x+1+y*self.width):
-        		q.put((x+1,y))
-        		parent[x+1+(y)*self.width] = x+y*self.width
+				return
+			if self.canTravel(x, y, 0) and not findloop(x+(y-1)*self.width,parent):
+			  q.put((x,y-1))
+			  parent[x+(y-1)*self.width] = x+y*self.width
+			
+			if self.canTravel(x, y, 1) and not findloop(x+(y+1)*self.width,parent):
+			  q.put((x,y+1))
+			  parent[x+(y+1)*self.width] = x+y*self.width
+			if self.canTravel(x, y, 2) and not findloop(x-1+y*self.width,parent):
+			  q.put((x-1,y))
+			  parent[x-1+(y)*self.width] = x+y*self.width
+			if self.canTravel(x, y, 3) and not findloop(x+1+y*self.width,parent):
+			  q.put((x+1,y))
+			  parent[x+1+(y)*self.width] = x+y*self.width
+		return
 
 	def drawsol(self):
 		for i in range(len(self.path)):
