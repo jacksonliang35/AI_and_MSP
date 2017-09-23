@@ -29,6 +29,7 @@ s_row=0
 s_col=0
 e_row=0
 e_col=0
+expand=0
 visited=np.zeros((height,width))
 for i in range(0,len(graph)):
     for j in range(0,len(graph[0])):
@@ -57,18 +58,15 @@ qx.append(curx)
 qy.append(cury)
 dirx=[1,0,-1,0]
 diry=[0,1,0,-1]
-oldx=s_row
-oldy=s_col
+oldx = s_row
+oldy = s_col
 print('width',width,'height',height)
 while len(qx)!=0:
     curx=qx.popleft()
     cury=qy.popleft()
+    expand+=1
 
     if curx == e_row and cury == e_col:
-        print('inside')
-        print("old:",oldx,oldy)
-        tracex[e_row][e_col] = oldx
-        tracey[e_row][e_col] = oldy
         break
 
     for i in range(0,4):
@@ -85,8 +83,6 @@ while len(qx)!=0:
             qx.append(tempx)
             qy.append(tempy)
 
-    oldx = curx
-    oldy = cury
 
 flag=0
 pathx=[]
@@ -94,21 +90,28 @@ pathy=[]
 
 pathx.append(e_row)
 pathy.append(e_col)
-tempx = tracex[e_row][e_col]
-tempy = tracey[e_row][e_col]
+a = tracex[e_row][e_col]
+b = tracey[e_row][e_col]
+ad=0
+temx=a
+temy=b
+#print(type(temx))
 
+chex=0
+chey=0
 while flag==0:
-    pathx.append(tempx)
-    pathy.append(tempy)
+    pathx.append(temx)
+    pathy.append(temy)
 
-    tempx=tracex[tempx][tempy]
-    tempy=tracey[tempx][tempy]
+    chex=tracex[temx][temy]
+    chey=tracey[temx][temy]
 
-    print(tempx,tempy)
-    if tempx==20 and tempy==3:
-        print("tr:",tracex[tempx][tempy],tracey[tempx][tempy])
-    if tempx==s_row and tempy==s_col:
-        print("here")
+    temx=chex
+    temy=chey
+
+    #print(temx,temy)
+    if temx==s_row and temy==s_col:
+        #print("here")
         pathx.append(s_row)
         pathy.append(s_col)
         flag=1
@@ -120,11 +123,6 @@ for i in range(0,len(pathx)):
     visited[pathx[i]][pathy[i]]=3
 visited[s_row][s_col]=4
 visited[e_row][e_col]=5
-print(tracex[21][3])
-print(tracey[21][3])
-
-print(tracex[20][3])
-print(tracey[20][3])
 
 with open('maze_result.txt', 'w') as f:
     sys.stdout = f
@@ -141,4 +139,7 @@ with open('maze_result.txt', 'w') as f:
             else:
                 print(" ",end="")
         print()
+    print("expand",expand)
+    print("path_cost",len(pathx))
+f.close()
 
