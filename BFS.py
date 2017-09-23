@@ -29,6 +29,7 @@ s_row=0
 s_col=0
 e_row=0
 e_col=0
+expand=0
 visited=np.zeros((height,width))
 for i in range(0,len(graph)):
     for j in range(0,len(graph[0])):
@@ -63,6 +64,7 @@ print('width',width,'height',height)
 while len(qx)!=0:
     curx=qx.popleft()
     cury=qy.popleft()
+    expand+=1
 
     if curx == e_row and cury == e_col:
         break
@@ -93,7 +95,7 @@ b = tracey[e_row][e_col]
 ad=0
 temx=a
 temy=b
-print(type(temx))
+#print(type(temx))
 
 chex=0
 chey=0
@@ -107,9 +109,9 @@ while flag==0:
     temx=chex
     temy=chey
 
-    print(temx,temy)
+    #print(temx,temy)
     if temx==s_row and temy==s_col:
-        print("here")
+        #print("here")
         pathx.append(s_row)
         pathy.append(s_col)
         flag=1
@@ -137,4 +139,7 @@ with open('maze_result.txt', 'w') as f:
             else:
                 print(" ",end="")
         print()
+    print("expand",expand)
+    print("path_cost",len(pathx))
+f.close()
 
