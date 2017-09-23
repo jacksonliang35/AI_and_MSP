@@ -2,6 +2,7 @@ import os
 import math
 import numpy as np
 import queue
+import sys
 
 class maze:
 	"""docstring for maze"""
@@ -230,10 +231,13 @@ class maze:
 
 	def drawsol(self):
 		for i in range(len(self.path)):
-			self.graph[self.path[i][1]][self.path[i][0]]='~'
+			self.graph[self.path[i][1]][self.path[i][0]]='.'
 		self.graph[self.starty][self.startx]='P'
-		for line in self.graph:
-			print(''.join(line))
+		with open('maze_result.txt', 'w') as f:
+			sys.stdout = f
+			for line in self.graph:
+				print(''.join(line))
+		f.close()
 		return
 
 
