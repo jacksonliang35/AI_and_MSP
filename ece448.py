@@ -67,8 +67,6 @@ class maze:
 		self.path=[]
 		q = queue.PriorityQueue()
 		discover = dict()
-		#cross = {}
-		parent=np.zeros(self.height*self.width)
 		self.explored=np.zeros(self.height*self.width)
 		for i in range(self.width*self.height):
 			parent[i]=-1
@@ -121,8 +119,6 @@ class maze:
 		self.path=[]
 		q = queue.PriorityQueue()
 		discover = dict()
-		#cross = {}
-		parent=np.zeros(self.height*self.width)
 		self.explored=np.zeros(self.height*self.width)
 		for i in range(self.width*self.height):
 			parent[i]=-1
@@ -180,8 +176,6 @@ class maze:
 		self.path=[]
 		q = queue.Queue() 
 		discover = dict()
-		#cross = {}
-		parent=np.zeros(self.height*self.width)
 		self.explored=np.zeros(self.height*self.width)
 		for i in range(self.width*self.height):
 			parent[i]=-1
