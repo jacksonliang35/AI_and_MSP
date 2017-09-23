@@ -9,12 +9,22 @@ def findloop(index, array):
 	a=index
 	while a!=-1:
 		a=array[a]
-		if index==array[i]:
+		if index==array[a]:
 			return True
 	return False
 class maze:
 	"""docstring for maze"""
 	def __init__(self, graph=[], height=0, width=0, explored=[], path=[], tree=[], goalx=[], goaly=[],startx=0,starty=0):
+		self.graph=[]
+		self.height=0
+		self.width=0
+		self.explored=[]
+		self.path=[]
+		self.tree=[]
+		self.goalx=[]
+		self.goaly=[]
+		self.startx=0
+		self.starty=0
 		return
 	def readmaze(self,filename):
 		self.graph= []
@@ -37,7 +47,7 @@ class maze:
 	def findGoal(self):
 		for i in range(self.width):
 			for j in range(self.height):
-				if self.graph[j][i]== 'P':
+				if self.graph[j][i]== '.':
 					self.goalx.append(i)
 					self.goaly.append(j)
 					break
@@ -70,37 +80,37 @@ class maze:
 		q.put((self.startx,self.starty))
 
 		while not q.empty():
-			current = Q.get()
+			current = q.get()
+			print(current)
+			x=current[0]
+			y=current[1]
 			if current[0] == self.goalx[0] and current[1]==self.goaly[0]:
-				while current != (startx,starty):
-					path.insert(parent[self.goalx[0]+self.goaly[0]*self.width])
-					current = parent[current]
+				while current != (self.startx,self.starty):
+					path.insert(current)
+					current = parent[current[0]+current[1]*self.width]
          		return
-        	if self.canTravel(x, y, 0) and explored==0 and not self.findloop(x+(y-1)*self.width):
+        	if self.canTravel(x, y, 0) and not self.findloop(x+(y-1)*self.width):
         		q.put((x,y-1))
-        		parent[x+(y-1)*self.width] =	x+y*self.width
+        		parent[x+(y-1)*self.width] = x+y*self.width
 
-        	if self.canTravel(x, y, 1) and explored==0 and not self.findloop(x+(y+1)*self.width):
+        	if self.canTravel(x, y, 1) and not self.findloop(x+(y+1)*self.width):
         		q.put((x,y+1))
         		parent[x+(y+1)*self.width] = x+y*self.width
 
-        	if self.canTravel(x, y, 2)and explored==0 and not self.findloop(x-1+y*self.width):
+        	if self.canTravel(x, y, 2) and not self.findloop(x-1+y*self.width):
         		q.put((x-1,y))
         		parent[x-1+(y)*self.width] = x+y*self.width
 
-        	if self.canTravel(x, y, 3)and explored==0 and not self.findloop(x+1+y*self.width):
+        	if self.canTravel(x, y, 3) and not self.findloop(x+1+y*self.width):
         		q.put((x+1,y))
         		parent[x+1+(y)*self.width] = x+y*self.width
 
-
-def drawsol(self):
-	for i in range(self.width):
-		for j in range(self.height):
-			if (i,j) not in path:
-				print(self.graph[i][j])
-			else:
-				print('~')
-	return
+	def drawsol(self):
+		for i in range(len(self.path)):
+			self.graph[path[i][0]][path[i][1]]='~'
+		for i in range(self.height):
+			print(self.graph[i])
+		return
 
 
 
@@ -111,6 +121,7 @@ a.findStart()
 for i in range(a.height):
 	print(a.graph[i])
 a.Astar()
+print(a.path)
 a.drawsol()
 
 
