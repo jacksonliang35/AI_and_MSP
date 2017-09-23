@@ -39,13 +39,13 @@ class maze:
 		return 0   #abs(y-yg)+abs(x-xg)
 
 	def heuristic2(self, cur, goal):	#goal is a list
-		return 0
-		'''
+		#return 0
+		
 		sum = 0
 		for p in goal:
 			sum += abs(cur[0]-p[0])+abs(cur[1]-p[1])
-		return sum
-		'''
+		return sum*1000
+		
 	def findGoal(self):
 		for i in range(self.width):
 			for j in range(self.height):
