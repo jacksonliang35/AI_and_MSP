@@ -107,23 +107,23 @@ class maze:
 				if self.canTravel(x, y, 0):
 					if explored[x+(y-1)*self.width]==0:
 						explored[x+(y-1)*self.width]=1
-						q.put((cost+1+self.heuristic2((startx, starty),goal),(x,y-1,cost+1)))
+						q.put((cost+1+self.heuristic2((x, y),goal),(x,y-1,cost+1)))
 						discover[x+(y-1)*self.width]=x+(y)*self.width
 
 				if self.canTravel(x, y, 1):
 					if explored[x+(y+1)*self.width]==0:
 						explored[x+(y+1)*self.width]=1
-						q.put((cost+1+self.heuristic2((startx, starty),goal),(x,y+1,cost+1)))
+						q.put((cost+1+self.heuristic2((x, y),goal),(x,y+1,cost+1)))
 						discover[x+(y+1)*self.width]=x+(y)*self.width
 				if self.canTravel(x, y, 2):
 					if explored[x-1+(y)*self.width]==0:
 						explored[x-1+(y)*self.width]=1
-						q.put((cost+1+self.heuristic2((startx, starty),goal),(x-1,y,cost+1)))
+						q.put((cost+1+self.heuristic2((x, y),goal),(x-1,y,cost+1)))
 						discover[x-1+(y)*self.width]=x+(y)*self.width
 				if self.canTravel(x, y, 3):
 					if explored[x+1+(y)*self.width]==0:
 						explored[x+1+(y)*self.width]=1
-						q.put((cost+1+self.heuristic2((startx, starty),goal),(x+1,y,cost+1)))
+						q.put((cost+1+self.heuristic2((x, y),goal),(x+1,y,cost+1)))
 						discover[x+1+(y)*self.width]=x+(y)*self.width
 
 			
