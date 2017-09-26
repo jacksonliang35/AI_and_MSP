@@ -40,7 +40,8 @@ class maze:
 
 	def heuristic2(self, cur, goal):	#goal is a list
 		go=0
-		#return 0
+		return 0
+		'''
 		for i in range(4):
 			if self.canTravel(cur[0],cur[1],i) ==False:
 				go+=1
@@ -48,6 +49,7 @@ class maze:
 		for p in goal:
 			sum += abs(cur[0]-p[0])+abs(cur[1]-p[1])
 		return go*50
+		'''
 		
 	def findGoal(self):
 		for i in range(self.width):
@@ -89,10 +91,10 @@ class maze:
 		explored[startx+(starty)*self.width] = 1
 		q = queue.PriorityQueue()
 
-		q.put((self.heuristic2((startx, starty),goal),(startx,starty,0,path[:],goal[:],discover,explored[:],startx,starty)))
+		q.put([self.heuristic2((startx, starty),goal),counter,(startx,starty,0,path.copy(),goal.copy(),discover,explored.copy(),startx,starty)])
 		while not q.empty():
 			counter+=1
-			temp2= q.get()[1]
+			temp2= q.get()[2]
 			current=(temp2[0],temp2[1])
 			cost=temp2[2]
 			path = temp2[3]
@@ -111,7 +113,6 @@ class maze:
 					temp = discover[current[0]+current[1]*self.width]
 					current = (temp%self.width,temp//self.width)
 					self.path.insert(0,current)
-
 				startx = x
 				starty = y
 				goal.remove((x,y))
@@ -123,25 +124,25 @@ class maze:
 				if explored[x+(y-1)*self.width]==0:
 					explored[x+(y-1)*self.width]=1
 					discover[x+(y-1)*self.width]=x+(y)*self.width
-					q.put((cost+1+self.heuristic2((x, y),goal),(x,y-1,cost+1,path[:],goal[:],discover.copy(),explored[:],startx,starty)))
+					q.put([cost+1+self.heuristic2((x, y),goal),counter,(x,y-1,cost+1,path.copy(),goal.copy(),discover.copy(),explored.copy(),startx,starty)])
 
 			if self.canTravel(x, y, 1):
 				if explored[x+(y+1)*self.width]==0:
 					explored[x+(y+1)*self.width]=1
 					discover[x+(y+1)*self.width]=x+(y)*self.width
-					q.put((cost+1+self.heuristic2((x, y),goal),(x,y+1,cost+1,path[:],goal[:],discover.copy(),explored[:],startx,starty)))
+					q.put([cost+1+self.heuristic2((x, y),goal),counter,(x,y+1,cost+1,path.copy(),goal.copy(),discover.copy(),explored.copy(),startx,starty)])
 
 			if self.canTravel(x, y, 2):
 				if explored[x-1+(y)*self.width]==0:
 					explored[x-1+(y)*self.width]=1
 					discover[x-1+(y)*self.width]=x+(y)*self.width
-					q.put((cost+1+self.heuristic2((x, y),goal),(x-1,y,cost+1,path[:],goal[:],discover.copy(),explored[:],startx,starty)))
+					q.put([cost+1+self.heuristic2((x, y),goal),counter,(x-1,y,cost+1,path.copy(),goal.copy(),discover.copy(),explored.copy(),startx,starty)])
 					
 			if self.canTravel(x, y, 3):
 				if explored[x+1+(y)*self.width]==0:
 					explored[x+1+(y)*self.width]=1
 					discover[x+1+(y)*self.width]=x+(y)*self.width
-					q.put((cost+1+self.heuristic2((x, y),goal),(x+1,y,cost+1,path[:],goal[:],discover.copy(),explored[:],startx,starty)))
+					q.put([cost+1+self.heuristic2((x, y),goal),counter,(x+1,y,cost+1,path.copy(),goal.copy(),discover.copy(),explored.copy(),startx,starty)])
 					
 
 		return counter	
