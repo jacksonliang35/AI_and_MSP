@@ -40,8 +40,7 @@ class maze:
     def heuristic(self, x, y, xg, yg):
         return 0   #abs(y-yg)+abs(x-xg)
 
-    def heuristic2(self, cur, goal):    #goal is a list
-        return len(goal)
+    
         '''
         for i in range(4):
             if self.canTravel(cur[0],cur[1],i) ==False:
@@ -87,7 +86,7 @@ class maze:
         explored[start[1]+(start[0])*self.width] = 1
         q = queue.PriorityQueue()
         # push evaluation, cost (pathlength), (counter,) position, path, goalc, explored
-        q.put([self.heuristic2(start,goal),0,counter,start,path,goal,explored])
+        q.put([heuristic2(start,goal),0,counter,start,path,goal,explored])
         while not q.empty():
             counter+=1
             state = q.get()
@@ -99,19 +98,7 @@ class maze:
             goalc = state[5]
             explored = state[6]
             print(len(goalc))
-            '''
-            temp2= q.get()[2]
-            current=(temp2[0],temp2[1])
-            cost=temp2[2]
-            path = temp2[3]
-            goal =temp2[4]
-            discover = temp2[5]
-            explored = temp2[6]
-            startx = temp2[7]
-            starty =temp2[8]
-            x=temp2[0]
-            y=temp2[1]
-            '''
+            #print(len(goalc))
 
             # Goal State
             if pos in goalc:
@@ -125,22 +112,22 @@ class maze:
             if self.canTravel(x, y, 0):
                 if explored[y+(x-1)*self.width]==0:
                     explored[y+(x-1)*self.width]=1
-                    q.put([costc+1+self.heuristic2(pos,goalc),costc+1,counter,(x-1,y),path.copy()+[0],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x-1,y),goalc),costc+1,counter,(x-1,y),path.copy()+[0],goalc.copy(),explored])
 
             if self.canTravel(x, y, 1):
                 if explored[y+(x+1)*self.width]==0:
                     explored[y+(x+1)*self.width]=1
-                    q.put([costc+1+self.heuristic2(pos,goalc),costc+1,counter,(x+1,y),path.copy()+[1],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x+1,y),goalc),costc+1,counter,(x+1,y),path.copy()+[1],goalc.copy(),explored])
 
             if self.canTravel(x, y, 2):
                 if explored[y-1+x*self.width]==0:
                     explored[y-1+x*self.width]=1
-                    q.put([costc+1+self.heuristic2(pos,goalc),costc+1,counter,(x,y-1),path.copy()+[2],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x,y-1),goalc),costc+1,counter,(x,y-1),path.copy()+[2],goalc.copy(),explored])
                     
             if self.canTravel(x, y, 3):
                 if explored[y+1+x*self.width]==0:
                     explored[y+1+x*self.width]=1
-                    q.put([costc+1+self.heuristic2(pos,goalc),costc+1,counter,(x,y+1),path.copy()+[3],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x,y+1),goalc),costc+1,counter,(x,y+1),path.copy()+[3],goalc.copy(),explored])
                     
 
         return -1    
@@ -173,8 +160,29 @@ class maze:
           for line in self.graph:
               print(''.join(line))
 
+''' Heuristics '''              
+def heuristic2(cur, goal):    #goal is a list  
+    dist = []    
+    # Find the longest path
+    for g in goal:
+        dist = dist + [abs(cur[0]-g[0])+abs(cur[1]-g[1])]
+    h1 = max(dist)
+    # Find sum of smallest distances with # of len(goal)
+    
+    n = len(goal)       
+    for i in range(n):
+        j = i+1
+        while j<n:    
+            dist = dist + [abs(goal[i][0]-goal[j][0])+abs(goal[i][1]-goal[j][1])]
+            j += 1
+    dist.sort()
+    h2 = sum(dist[0:n])
+
+    return max([h1,h2])
+
+
 a=maze()
-a.readMaze('tinySearch.txt')
+a.readMaze('smallSearch.txt')
 a.printMaze()
 #for i in range(a.height):
 #    print(a.graph[i])
@@ -190,6 +198,5 @@ a.printMaze()
 
 #print(a.graph[21][5])
 #a.drawsol()
-
 
         
