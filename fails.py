@@ -39,17 +39,18 @@ class maze:
 		return 0   #abs(y-yg)+abs(x-xg)
 
 	def heuristic2(self, cur, goal):	#goal is a list
+		'''
 		go=0
 		return 0
-		'''
 		for i in range(4):
 			if self.canTravel(cur[0],cur[1],i) ==False:
 				go+=1
-		sum = 0
-		for p in goal:
-			sum += abs(cur[0]-p[0])+abs(cur[1]-p[1])
-		return go*50
 		'''
+		s = []
+		for p in goal:
+			s.append(abs(cur[0]-p[0])+abs(cur[1]-p[1]))
+		return sum(s)+len(goal)
+		
 		
 	def findGoal(self):
 		for i in range(self.width):
@@ -111,7 +112,7 @@ class maze:
 				pathc = []
 				#pathc.insert(0,current)
 				while current != (startx,starty):
-					print(current)
+					#print(current)
 					temp = discover[current[0]+current[1]*self.width]
 					current = (temp%self.width,temp//self.width)
 					pathc.insert(0,current)
@@ -163,10 +164,22 @@ class maze:
 		f.close()
 		return
 
+	def drawsol2(self):
+		for i in range(len(self.path)):
+			self.graph[self.path[i][1]][self.path[i][0]]='~'
+			if i % 2 == 0:
+				for line in self.graph:
+					print(''.join(line))
+				print()
+		self.graph[self.starty][self.startx]='P'
+		for line in self.graph:
+			print(''.join(line))
+		return
+
 
 
 a=maze()
-a.readmaze('tinySearch.txt')
+a.readmaze('smallSearch.txt')
 
 #for i in range(a.height):
 #	print(a.graph[i])
@@ -175,12 +188,12 @@ a.findStart()
 print(a.Astar())
 print(len(a.path))
 print(a.path)
-a.drawsol()
+#a.drawsol()
 #print(a.greedy())
 #print(a.bfs())
 
 #print(a.graph[21][5])
-a.drawsol()
+a.drawsol2()
 
 
 		
