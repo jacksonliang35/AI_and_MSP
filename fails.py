@@ -105,7 +105,7 @@ class maze:
 			starty =temp2[8]
 			x=temp2[0]
 			y=temp2[1]
-
+			print(len(goal))
 			# Goal State
 			if (x,y) in goal:
 
@@ -116,6 +116,7 @@ class maze:
 				startx = x
 				starty = y
 				goal.remove((x,y))
+				explored = np.zeros(self.height*self.width)
 				if goal == []:
 					self.path=path
 					break
