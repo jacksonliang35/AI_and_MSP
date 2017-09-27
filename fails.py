@@ -3,7 +3,7 @@ import math
 import numpy as np
 import queue
 import sys
-
+import copy
 class maze:
 	"""docstring for maze"""
 	def __init__(self, graph=[], height=0, width=0, explored=[], path=[], tree=[], goalx=[], goaly=[],startx=0,starty=0):
@@ -108,17 +108,21 @@ class maze:
 			print(len(goal))
 			# Goal State
 			if (x,y) in goal:
-
+				pathc = []
+				#pathc.insert(0,current)
 				while current != (startx,starty):
+					print(current)
 					temp = discover[current[0]+current[1]*self.width]
 					current = (temp%self.width,temp//self.width)
-					self.path.insert(0,current)
+					pathc.insert(0,current)
+				path += pathc
 				startx = x
 				starty = y
 				goal.remove((x,y))
 				explored = np.zeros(self.height*self.width)
+				discover = dict()
 				if goal == []:
-					self.path=path
+					self.path=copy.deepcopy(path)
 					break
 				#break	# Same as breaking two loops
 			if self.canTravel(x, y, 0):
@@ -149,7 +153,7 @@ class maze:
 		return counter	
 
 	def drawsol(self):
-		for i in range(10):
+		for i in range(len(self.path)):
 			self.graph[self.path[i][1]][self.path[i][0]]='~'
 		self.graph[self.starty][self.startx]='P'
 		with open('maze_result.txt', 'w') as f:
