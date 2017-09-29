@@ -122,8 +122,8 @@ class maze:
             temp=self.findGoal2(graph)
             goalc = temp[1]
             print(len(goalc))
-            for line in graph:
-              print(''.join(line))
+            #for line in graph:
+              #print(''.join(line))
             # Goal State
             if temp[0]:
                 
@@ -240,6 +240,85 @@ class maze:
     def printMaze(self):
           for line in self.graph:
               print(''.join(line))
+    def draw(self):
+        x = self.startx
+        y = self.starty
+        graph1=copy.deepcopy(self.graph)
+        for i in self.path:
+          temp=graph1[x][y]
+          graph1[x][y]='a'
+          for line in graph1:
+            print(''.join(line))
+          print()
+          graph1[x][y]=temp
+          if i== 0:
+            if graph1[x-1][y]=='b':
+                if graph1[x-2][y]=='.':
+                    graph1[x-2][y]='B'
+                else:
+                    graph1[x-2][y]='b'
+                graph1[x-1][y]=' '
+            elif graph1[x-1][y]=='B':
+                graph1[x-1][y]='.'
+                if graph1[x-2][y]=='.':
+                    graph1[x-2][y]='B'
+                else:
+                    graph1[x-2][y]='b'
+            x=x-1
+            continue
+
+          if i==1:
+            if graph1[x+1][y]=='b':
+                if graph1[x+2][y]=='.':
+                    graph1[x+2][y]='B'
+                else:
+                    graph1[x+2][y]='b'
+                graph1[x+1][y]=' '
+            elif graph1[x+1][y]=='B':
+                graph1[x+1][y]='.'
+                if graph1[x+2][y]=='.':
+                    graph1[x+2][y]='B'
+                else:
+                    graph1[x+2][y]='b'
+            x=x+1
+            continue
+
+          if i==2:
+            if graph1[x][y-1]=='b':
+                if graph1[x][y-2]=='.':
+                    graph1[x][y-2]='B'
+                else:
+                    graph1[x][y-2]='b'
+                graph1[x][y-1]=' '
+            elif graph1[x][y-1]=='B':
+                graph1[x][y-1]='.'
+                if graph1[x][y-2]=='.':
+                    graph1[x][y-2]='B'
+                else:
+                    graph1[x][y-2]='b'
+            y=y-1
+            continue
+                  
+          if i==3:
+            if graph1[x][y+1]=='b':
+                if graph1[x][y+2]=='.':
+                    graph1[x][y+2]='B'
+                else:
+                    graph1[x][y+2]='b'
+                graph1[x][y+1]=' '
+            elif graph1[x][y+1]=='B':
+                graph1[x][y+1]='.'
+                if graph1[x][y+2]=='.':
+                    graph1[x][y+2]='B'
+                else:
+                    graph1[x][y+2]='b'
+            y=y+1
+            continue
+        graph1[x][y]='a'
+        for line in graph1:
+            print(''.join(line))
+        print()
+        return
 
 ''' Heuristics '''              
 def heuristic2(cur, goal):    #goal is a list  
@@ -262,6 +341,7 @@ def heuristic2(cur, goal):    #goal is a list
 
     return max([h1,h2])
 
+                    
 
 a=maze()
 a.readMaze('sokoban1.txt')
@@ -273,6 +353,7 @@ a.getStart()
 print(a.Astar())
 print(len(a.path))
 print(a.path)
+a.draw()
 a.drawPath()
 a.printMaze()
 #print(a.greedy())
