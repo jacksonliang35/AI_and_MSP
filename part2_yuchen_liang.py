@@ -85,21 +85,22 @@ class maze:
         explored = np.zeros(self.height*self.width)
         explored[start[1]+(start[0])*self.width] = 1
         q = queue.PriorityQueue()
-        # push evaluation, cost (pathlength), (counter,) position, path, goalc, explored
-        q.put([heuristic2(start,goal),0,counter,start,path,goal,explored])
+        # push evaluation, cost (pathlength), (counter,) position, path, goalc, explored, mstsum
+        mstsum = MSTsum(goal)
+        q.put([heuristic2(start,goal,mstsum),0,start,path,goal,explored,mstsum])
         while not q.empty():
             counter+=1
             state = q.get()
             costc = state[1]
-            pos = state[3]
+            pos = state[2]
             x = pos[0]
             y = pos[1]
-            path = state[4]
-            goalc = state[5]
-            explored = state[6]
+            path = state[3]
+            goalc = state[4]
+            explored = state[5]
+            mstsum = state[6]
             print(len(goalc))
-            #print(len(goalc))
-
+            
             # Goal State
             if pos in goalc:
                 goalc.remove(pos)
@@ -108,26 +109,27 @@ class maze:
                     return counter
                 explored = np.zeros(self.height*self.width)
                 explored[y+x*self.width]=1
-                #break    # Same as breaking two loops
+                # Recalculating MST
+                mstsum = MSTsum(goalc)
             if self.canTravel(x, y, 0):
                 if explored[y+(x-1)*self.width]==0:
                     explored[y+(x-1)*self.width]=1
-                    q.put([costc+1+heuristic2((x-1,y),goalc),costc+1,counter,(x-1,y),path.copy()+[0],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x-1,y),goalc,mstsum),costc+1,(x-1,y),path.copy()+[0],goalc.copy(),explored,mstsum])
 
             if self.canTravel(x, y, 1):
                 if explored[y+(x+1)*self.width]==0:
                     explored[y+(x+1)*self.width]=1
-                    q.put([costc+1+heuristic2((x+1,y),goalc),costc+1,counter,(x+1,y),path.copy()+[1],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x+1,y),goalc,mstsum),costc+1,(x+1,y),path.copy()+[1],goalc.copy(),explored,mstsum])
 
             if self.canTravel(x, y, 2):
                 if explored[y-1+x*self.width]==0:
                     explored[y-1+x*self.width]=1
-                    q.put([costc+1+heuristic2((x,y-1),goalc),costc+1,counter,(x,y-1),path.copy()+[2],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x,y-1),goalc,mstsum),costc+1,(x,y-1),path.copy()+[2],goalc.copy(),explored,mstsum])
                     
             if self.canTravel(x, y, 3):
                 if explored[y+1+x*self.width]==0:
                     explored[y+1+x*self.width]=1
-                    q.put([costc+1+heuristic2((x,y+1),goalc),costc+1,counter,(x,y+1),path.copy()+[3],goalc.copy(),explored])
+                    q.put([costc+1+heuristic2((x,y+1),goalc,mstsum),costc+1,(x,y+1),path.copy()+[3],goalc.copy(),explored,mstsum])
                     
 
         return -1    
@@ -161,24 +163,52 @@ class maze:
               print(''.join(line))
 
 ''' Heuristics '''              
-def heuristic2(cur, goal):    #goal is a list  
+def heuristic2(cur, goal, mstsum):    #goal is a list  
+    # Using MST    
     dist = []    
+    for g in goal:
+        dist = dist + [d(cur,g)]    
+    '''    
     # Find the longest path
     for g in goal:
-        dist = dist + [abs(cur[0]-g[0])+abs(cur[1]-g[1])]
+        dist = dist + [d(cur,g)]
     h1 = max(dist)
-    # Find sum of smallest distances with # of len(goal)
-    
+        
+    # Find sum of smallest distances with # of len(goal)    
     n = len(goal)       
     for i in range(n):
         j = i+1
         while j<n:    
-            dist = dist + [abs(goal[i][0]-goal[j][0])+abs(goal[i][1]-goal[j][1])]
+            dist = dist + [d(goal[i],goal[j])]
             j += 1
     dist.sort()
     h2 = sum(dist[0:n])
+    '''
+    return mstsum + min(dist)
 
-    return max([h1,h2])
+def d(x,y):
+    # Manhattan distance
+    return abs(x[0]-y[0])+abs(x[1]-y[1])
+
+def MSTsum(goal):
+    # Find the shortest distance to traverse a graph, assuming len(goal)>0
+    lg = len(goal)
+    if lg == 1:
+        return 0
+    explored = [0]
+    sum = 0
+    q = queue.PriorityQueue()
+    for i in range(1,lg):
+        q.put([d(goal[0],goal[i]),0,i])
+    while len(explored) < lg:
+        v = q.get()
+        sum += v[0]
+        explored += [v[2]]
+        for i in range(1,lg):
+            if i not in explored:
+                q.put([d(goal[v[2]],goal[i]),v[2],i])
+    return sum
+
 
 
 a=maze()
