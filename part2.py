@@ -133,78 +133,82 @@ class maze:
             if self.canTravel(x, y, 0):
                 if explored[y+(x-1)*self.width]==0:
                     explored[y+(x-1)*self.width]=1
-                    if graph[x-1][y]=='b':
-                        if graph[x-2][y]=='.':
-                            graph[x-2][y]='B'
+                    graph1=copy.deepcopy(graph)
+                    if graph1[x-1][y]=='b':
+                        if graph1[x-2][y]=='.':
+                            graph1[x-2][y]='B'
                         else:
-                            graph[x-2][y]='b'
-                        graph[x-1][y]=' '
+                            graph1[x-2][y]='b'
+                        graph1[x-1][y]=' '
                         explored = np.zeros(self.height*self.width)
-                    elif graph[x-1][y]=='B':
-                        graph[x-1][y]='.'
-                        if graph[x-2][y]=='.':
-                            graph[x-2][y]='B'
+                    elif graph1[x-1][y]=='B':
+                        graph1[x-1][y]='.'
+                        if graph1[x-2][y]=='.':
+                            graph1[x-2][y]='B'
                         else:
-                            graph[x-2][y]='b'
+                            graph1[x-2][y]='b'
                         explored = np.zeros(self.height*self.width)
-                    q.put([costc+1+heuristic2((x-1,y),goalc),costc+1,counter,(x-1,y),path.copy()+[0],explored,graph.copy()])
+                    q.put([costc+1+heuristic2((x-1,y),goalc),costc+1,counter,(x-1,y),path.copy()+[0],explored,graph1.copy()])
 
             if self.canTravel(x, y, 1):
                 if explored[y+(x+1)*self.width]==0:
                     explored[y+(x+1)*self.width]=1
-                    if graph[x+1][y]=='b':
-                        if graph[x+2][y]=='.':
-                            graph[x+2][y]='B'
+                    graph1=copy.deepcopy(graph)
+                    if graph1[x+1][y]=='b':
+                        if graph1[x+2][y]=='.':
+                            graph1[x+2][y]='B'
                         else:
-                            graph[x+2][y]='b'
-                        graph[x+1][y]=' '
+                            graph1[x+2][y]='b'
+                        graph1[x+1][y]=' '
                         explored = np.zeros(self.height*self.width)
-                    elif graph[x+1][y]=='B':
-                        graph[x+1][y]='.'
-                        if graph[x+2][y]=='.':
-                            graph[x+2][y]='B'
+                    elif graph1[x+1][y]=='B':
+                        graph1[x+1][y]='.'
+                        if graph1[x+2][y]=='.':
+                            graph1[x+2][y]='B'
                         else:
-                            graph[x+2][y]='b'
+                            graph1[x+2][y]='b'
                         explored = np.zeros(self.height*self.width)
-                    q.put([costc+1+heuristic2((x+1,y),goalc),costc+1,counter,(x+1,y),path.copy()+[1],explored,graph.copy()])
+                    q.put([costc+1+heuristic2((x+1,y),goalc),costc+1,counter,(x+1,y),path.copy()+[1],explored,graph1.copy()])
 
             if self.canTravel(x, y, 2):
                 if explored[y-1+x*self.width]==0:
                     explored[y-1+x*self.width]=1
-                    if graph[x][y-1]=='b':
-                        if graph[x][y-2]=='.':
-                            graph[x][y-2]='B'
+                    graph1=copy.deepcopy(graph)
+                    if graph1[x][y-1]=='b':
+                        if graph1[x][y-2]=='.':
+                            graph1[x][y-2]='B'
                         else:
-                            graph[x][y-2]='b'
-                        graph[x][y-1]=' '
+                            graph1[x][y-2]='b'
+                        graph1[x][y-1]=' '
                         explored = np.zeros(self.height*self.width)
-                    elif graph[x][y-1]=='B':
-                        graph[x][y-1]='.'
-                        if graph[x][y-2]=='.':
-                            graph[x][y-2]='B'
+                    elif graph1[x][y-1]=='B':
+                        graph1[x][y-1]='.'
+                        if graph1[x][y-2]=='.':
+                            graph1[x][y-2]='B'
                         else:
-                            graph[x][y-2]='b'
+                            graph1[x][y-2]='b'
                         explored = np.zeros(self.height*self.width)
-                    q.put([costc+1+heuristic2((x,y-1),goalc),costc+1,counter,(x,y-1),path.copy()+[2],explored,graph.copy()])
+                    q.put([costc+1+heuristic2((x,y-1),goalc),costc+1,counter,(x,y-1),path.copy()+[2],explored,graph1.copy()])
                     
             if self.canTravel(x, y, 3):
                 if explored[y+1+x*self.width]==0:
                     explored[y+1+x*self.width]=1
-                    if graph[x][y+1]=='b':
-                        if graph[x][y+2]=='.':
-                            graph[x][y+2]='B'
+                    graph1=copy.deepcopy(graph)
+                    if graph1[x][y+1]=='b':
+                        if graph1[x][y+2]=='.':
+                            graph1[x][y+2]='B'
                         else:
-                            graph[x][y+2]='b'
-                        graph[x][y+1]=' '
+                            graph1[x][y+2]='b'
+                        graph1[x][y+1]=' '
                         explored = np.zeros(self.height*self.width)
-                    elif graph[x][y+1]=='B':
-                        graph[x][y+1]='.'
-                        if graph[x][y+2]=='.':
-                            graph[x][y+2]='B'
+                    elif graph1[x][y+1]=='B':
+                        graph1[x][y+1]='.'
+                        if graph1[x][y+2]=='.':
+                            graph1[x][y+2]='B'
                         else:
-                            graph[x][y+2]='b'
+                            graph1[x][y+2]='b'
                         explored = np.zeros(self.height*self.width)
-                    q.put([costc+1+heuristic2((x,y+1),goalc),costc+1,counter,(x,y+1),path.copy()+[3],explored,graph.copy()])
+                    q.put([costc+1+heuristic2((x,y+1),goalc),costc+1,counter,(x,y+1),path.copy()+[3],explored,graph1.copy()])
                     
 
         return -1    
