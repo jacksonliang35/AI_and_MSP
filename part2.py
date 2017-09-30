@@ -4,6 +4,8 @@ import numpy as np
 import queue
 import sys
 import copy
+import time
+import curses
 class maze:
     """docstring for maze"""
     def __init__(self, graph=[], height=0, width=0, explored=[], path=[], goalx=[], goaly=[],startx=0,starty=0):
@@ -243,13 +245,28 @@ class maze:
     def draw(self):
         x = self.startx
         y = self.starty
+        #================
+        scr=curses.initscr()
+        #================
         graph1=copy.deepcopy(self.graph)
         for i in self.path:
           temp=graph1[x][y]
           graph1[x][y]='a'
+        #================
+          scr_count=0
+        #================
           for line in graph1:
-            print(''.join(line))
-          print()
+        #================
+            scr.addstr(scr_count,0,str(''.join(line)))
+            scr.refresh()
+            scr_count=scr_count+1
+        #================
+            #print(''.join(line))
+          #print()
+          #===============
+          time.sleep(1)
+          sys.stdout.flush()
+          #===============
           graph1[x][y]=temp
           if i== 0:
             if graph1[x-1][y]=='b':
@@ -315,9 +332,23 @@ class maze:
             y=y+1
             continue
         graph1[x][y]='a'
+        #=================
+        scr_count=0
+        #=================
         for line in graph1:
-            print(''.join(line))
-        print()
+          #===================
+          scr.addstr(scr_count,0,str(''.join(line)))
+          scr.refresh()
+          scr_count=scr_count+1
+          #===================
+            #print(''.join(line))
+        #print()
+        #====================
+        time.sleep(2)
+        scr.clear()
+        curses.endwin()
+
+        #====================
         return
 
 ''' Heuristics '''              
@@ -350,12 +381,13 @@ a.printMaze()
 #    print(a.graph[i])
 a.findGoal()
 a.getStart()
-print(a.Astar())
-print(len(a.path))
-print(a.path)
+a.Astar()
+#print(a.Astar())
+#print(len(a.path))
+#print(a.path)
 a.draw()
-a.drawPath()
-a.printMaze()
+#a.drawPath()
+#a.printMaze()
 #print(a.greedy())
 #print(a.bfs())
 
