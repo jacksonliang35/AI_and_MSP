@@ -1,16 +1,15 @@
 import os
-import math
 import numpy as np
+import scipy.sparse as sps
 import queue
 import sys
 
 class maze:
     """docstring for maze"""
-    def __init__(self, graph=[], height=0, width=0, explored=[], path=[], goalx=[], goaly=[],startx=0,starty=0):
+    def __init__(self, graph=[], height=0, width=0, path=[], goalx=[], goaly=[],startx=0,starty=0):
         self.graph=[]
         self.height=0
         self.width=0
-        self.explored=[]
         self.path=[]
         self.goalx=[]
         self.goaly=[]
@@ -40,7 +39,7 @@ class maze:
     def heuristic(self, x, y, xg, yg):
         return 0   #abs(y-yg)+abs(x-xg)
 
-    
+
         '''
         for i in range(4):
             if self.canTravel(cur[0],cur[1],i) ==False:
@@ -50,7 +49,7 @@ class maze:
             sum += abs(cur[0]-p[0])+abs(cur[1]-p[1])
         return go*50
         '''
-        
+
     def findGoal(self):
          for i in range(self.height):
             for j in range(self.width):
@@ -81,58 +80,66 @@ class maze:
         goal = []
         for i in range(len(self.goalx)):
             goal += [(self.goalx[i],self.goaly[i])]
-        # Set up goal counter
-        explored = np.zeros(self.height*self.width)
-        explored[start[1]+(start[0])*self.width] = 1
+        # Set up goal counter & explored
+        explored = sps.dok_matrix((self.height,self.width))
+        # explored = np.zeros(self.height*self.width)
+        explored[start[0],start[1]] = 1
         q = queue.PriorityQueue()
-        # push evaluation, cost (pathlength), (counter,) position, path, goalc, explored, mstsum
+        # push evaluation, length of goal , (counter,), cost (pathlength) ,position, path, goalc, explored, mstsum
         mstsum = MSTsum(goal)
-        q.put([heuristic2(start,goal,mstsum),0,start,path,goal,explored,mstsum])
+        counter=0
+        q.put([heuristic2(start,goal,mstsum),len(goal),counter,0,start,path,goal,explored,mstsum])
         while not q.empty():
             counter+=1
             state = q.get()
-            costc = state[1]
-            pos = state[2]
+
+            costc = state[3]
+            pos = state[4]
             x = pos[0]
             y = pos[1]
-            path = state[3]
-            goalc = state[4]
-            explored = state[5]
-            mstsum = state[6]
+            path = state[5]
+            goalc = state[6]
+            explored = state[7]
+            mstsum = state[8]
             print(len(goalc))
-            
+            '''
+            if len(goalc)==5:
+                print(path)
+                break
+            '''
+
             # Goal State
             if pos in goalc:
                 goalc.remove(pos)
                 if goalc == []:
                     self.path=path
                     return counter
-                explored = np.zeros(self.height*self.width)
-                explored[y+x*self.width]=1
+                explored = sps.dok_matrix((self.height,self.width))
+                explored[x,y]=1
                 # Recalculating MST
                 mstsum = MSTsum(goalc)
             if self.canTravel(x, y, 0):
-                if explored[y+(x-1)*self.width]==0:
-                    explored[y+(x-1)*self.width]=1
-                    q.put([costc+1+heuristic2((x-1,y),goalc,mstsum),costc+1,(x-1,y),path.copy()+[0],goalc.copy(),explored,mstsum])
+                if explored[x-1,y]==0:
+                    explored[x-1,y]=1
+                    q.put([costc+1+heuristic2((x-1,y),goalc,mstsum),len(goalc),counter,costc+1,(x-1,y),path.copy()+[0],goalc.copy(),explored,mstsum])
 
             if self.canTravel(x, y, 1):
-                if explored[y+(x+1)*self.width]==0:
-                    explored[y+(x+1)*self.width]=1
-                    q.put([costc+1+heuristic2((x+1,y),goalc,mstsum),costc+1,(x+1,y),path.copy()+[1],goalc.copy(),explored,mstsum])
+                if explored[x+1,y]==0:
+                    explored[x+1,y]=1
+                    q.put([costc+1+heuristic2((x+1,y),goalc,mstsum),len(goalc),counter,costc+1,(x+1,y),path.copy()+[1],goalc.copy(),explored,mstsum])
 
             if self.canTravel(x, y, 2):
-                if explored[y-1+x*self.width]==0:
-                    explored[y-1+x*self.width]=1
-                    q.put([costc+1+heuristic2((x,y-1),goalc,mstsum),costc+1,(x,y-1),path.copy()+[2],goalc.copy(),explored,mstsum])
-                    
-            if self.canTravel(x, y, 3):
-                if explored[y+1+x*self.width]==0:
-                    explored[y+1+x*self.width]=1
-                    q.put([costc+1+heuristic2((x,y+1),goalc,mstsum),costc+1,(x,y+1),path.copy()+[3],goalc.copy(),explored,mstsum])
-                    
+                if explored[x,y-1]==0:
+                    explored[x,y-1]=1
+                    q.put([costc+1+heuristic2((x,y-1),goalc,mstsum),len(goalc),counter,costc+1,(x,y-1),path.copy()+[2],goalc.copy(),explored,mstsum])
 
-        return -1    
+            if self.canTravel(x, y, 3):
+                if explored[x,y+1]==0:
+                    explored[x,y+1]=1
+                    q.put([costc+1+heuristic2((x,y+1),goalc,mstsum),len(goalc),counter,costc+1,(x,y+1),path.copy()+[3],goalc.copy(),explored,mstsum])
+
+
+        return -1
 
     def drawsol(self):
         for i in range(len(self.path)):
@@ -162,23 +169,23 @@ class maze:
           for line in self.graph:
               print(''.join(line))
 
-''' Heuristics '''              
-def heuristic2(cur, goal, mstsum):    #goal is a list  
-    # Using MST    
-    dist = []    
+''' Heuristics '''
+def heuristic2(cur, goal, mstsum):    #goal is a list
+    # Using MST
+    dist = []
     for g in goal:
-        dist = dist + [d(cur,g)]    
-    '''    
+        dist = dist + [d(cur,g)]
+    '''
     # Find the longest path
     for g in goal:
         dist = dist + [d(cur,g)]
     h1 = max(dist)
-        
-    # Find sum of smallest distances with # of len(goal)    
-    n = len(goal)       
+
+    # Find sum of smallest distances with # of len(goal)
+    n = len(goal)
     for i in range(n):
         j = i+1
-        while j<n:    
+        while j<n:
             dist = dist + [d(goal[i],goal[j])]
             j += 1
     dist.sort()
@@ -228,5 +235,3 @@ a.printMaze()
 
 #print(a.graph[21][5])
 #a.drawsol()
-
-        
