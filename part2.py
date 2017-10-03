@@ -119,19 +119,12 @@ class maze:
             path = state[4]
             explored = state[5]
             graph =state[6]
-            
-            #print(len(goalc))
             temp=self.findGoal2(graph)
-            goalc = temp[1]
-            print(len(goalc))
-            #for line in graph:
-              #print(''.join(line))
-            # Goal State
+            goalc=temp[1]
             if temp[0]:
                 
                 self.path=copy.deepcopy(path)
                 return counter
-                #break    # Same as breaking two loops
             if self.canTravel(x, y, 0):
                 if explored[y+(x-1)*self.width]==0:
                     explored[y+(x-1)*self.width]=1
@@ -350,6 +343,21 @@ class maze:
 
         #====================
         return
+    def printPath(self):
+      path = self.path.copy()
+      curx = self.startx
+      cury = self.starty
+      for x in path:
+        print((cury,curx))
+        if x == 0:
+          curx -= 1
+        elif x == 1:
+          curx += 1
+        elif x == 2:
+          cury -= 1
+        else:
+          cury += 1
+      return
 
 ''' Heuristics '''              
 def heuristic2(cur, goal):    #goal is a list  
@@ -377,21 +385,13 @@ def heuristic2(cur, goal):    #goal is a list
 a=maze()
 a.readMaze('sokoban1.txt')
 a.printMaze()
-#for i in range(a.height):
-#    print(a.graph[i])
+
 a.findGoal()
 a.getStart()
 a.Astar()
-#print(a.Astar())
-#print(len(a.path))
-#print(a.path)
-a.draw()
-#a.drawPath()
-#a.printMaze()
-#print(a.greedy())
-#print(a.bfs())
 
-#print(a.graph[21][5])
-#a.drawsol()
+a.draw()
+a.printPath()
+
 
         
