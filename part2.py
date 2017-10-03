@@ -388,7 +388,7 @@ a.printMaze()
 
 a.findGoal()
 a.getStart()
-a.Astar()
+print(a.Astar())
 
 a.draw()
 a.printPath()
