@@ -52,9 +52,8 @@ class maze:
 					break
 		return
 
-	#Input:
-	#Output:
-	#Description:		
+
+	#Description:manhattan distance	
 	def heuristic(self, x, y, xg, yg):
 		return abs(y-yg)+abs(x-xg)
 
@@ -92,16 +91,18 @@ class maze:
 		  return (self.graph[y][x+1]!='%')#right
 		return False
 
-	#Input: 
-	#Output:
-	#Description:
+	#Input : maze
+	#Output: number of node expansion maze or a false alarm
+	#Description: In this function, we apply BFS algorithm to get the path of a maze
 	def greedy(self):
 		counter=0
 		self.path=[]
-		q = queue.PriorityQueue()
-		discover = dict()
+		q = queue.PriorityQueue()#prority Queue to obtain the highest priority element
+		discover = dict()#dict help us to do the back tracking
 		self.explored=np.zeros(self.height*self.width)
 		self.explored[self.startx+(self.starty)*self.width]=1
+		#calculate priority value (heuristic,i.e.manhattan distance)
+		#enqueue the position
 		q.put((self.heuristic(self.startx, self.starty, self.goalx[0], self.goaly[0]),(self.startx,self.starty)))
 		while not q.empty():
 			counter+=1
@@ -114,25 +115,29 @@ class maze:
 					current = (temp%self.width,temp//self.width)
 					self.path.insert(0,current)
 				return counter
-			if self.canTravel(x, y, 0):
+				#for every point we pop from queue, check the four directions,
+				#if we can travel through direction a, enqueuw the point on direction a
+				#mark the current point as visited, and recode the step to the
+				#discovery dictionary
+			if self.canTravel(x, y, 0):#up
 				if self.explored[x+(y-1)*self.width]==0:
 					self.explored[x+(y-1)*self.width]=1
 					q.put((self.heuristic(x, y-1, self.goalx[0], self.goaly[0]),(x,y-1)))
 					discover[x+(y-1)*self.width]=x+(y)*self.width
 
-			if self.canTravel(x, y, 1):
+			if self.canTravel(x, y, 1):#down
 				if self.explored[x+(y+1)*self.width]==0:
 					self.explored[x+(y+1)*self.width]=1
 					q.put((self.heuristic(x, y+1, self.goalx[0], self.goaly[0]),(x,y+1)))
 					discover[x+(y+1)*self.width]=x+(y)*self.width
 
-			if self.canTravel(x, y, 2):
+			if self.canTravel(x, y, 2):#left
 				if self.explored[x-1+(y)*self.width]==0:
 					self.explored[x-1+(y)*self.width]=1
 					q.put((self.heuristic(x-1, y, self.goalx[0], self.goaly[0]),(x-1,y)))
 					discover[x-1+(y)*self.width]=x+(y)*self.width
 
-			if self.canTravel(x, y, 3):
+			if self.canTravel(x, y, 3):#right
 				if self.explored[x+1+(y)*self.width]==0:
 					self.explored[x+1+(y)*self.width]=1
 					q.put((self.heuristic(x+1, y, self.goalx[0], self.goaly[0]),(x+1,y)))
@@ -140,49 +145,54 @@ class maze:
 			
 		return -1
 
-	#Input:
-	#Output:
-	#Description:
+	#Input : maze
+	#Output: number of node expansion maze or a false alarm
+	#Description: In this function, we apply BFS algorithm to get the path of a maze
 	def Astar(self):
 		counter=0
 		self.path=[]
-		q = queue.PriorityQueue()
-		discover = dict()
+		q = queue.PriorityQueue()#prority Queue to obtain the highest priority element
+		discover = dict()#dict help us to do the back tracking
 		self.explored=np.zeros(self.height*self.width)
 		self.explored[self.startx+(self.starty)*self.width]=1
-		q.put((self.heuristic(self.startx, self.starty, self.goalx[0], self.goaly[0]),(self.startx,self.starty,0)))
+		#calculate priority value by adding the cost and heuristic(manhattan distance)
+		q.put((0+self.heuristic(self.startx, self.starty, self.goalx[0], self.goaly[0]),(self.startx,self.starty,0)))
+		#enqueue a tuple (priority value, position,cost)
 		while not q.empty():
-#			print("here")
 			counter+=1
 			temp2= q.get()[1]
 			current=(temp2[0],temp2[1])
 			cost=temp2[2]
 			x=current[0]
 			y=current[1]
-#			print("Astarxy",x,y)
 			if current[0] == self.goalx[0] and current[1]==self.goaly[0]:
 				while current != (self.startx,self.starty):
 					temp = discover[current[0]+current[1]*self.width]
 					current = (temp%self.width,temp//self.width)
 					self.path.insert(0,current)
 				return counter
-			if self.canTravel(x, y, 0):
+				#for every point we pop from queue, check the four directions,
+				#if we can travel through direction a, enqueuw the point on direction a
+				#mark the current point as visited, and recode the step to the
+				#discovery dictionary
+			if self.canTravel(x, y, 0):#up
 				if self.explored[x+(y-1)*self.width]==0:
 					self.explored[x+(y-1)*self.width]=1
+					#increment cost for each expansion
 					q.put((cost+1+self.heuristic(x, y-1, self.goalx[0], self.goaly[0]),(x,y-1,cost+1)))
 					discover[x+(y-1)*self.width]=x+(y)*self.width
 
-			if self.canTravel(x, y, 1):
+			if self.canTravel(x, y, 1):#down
 				if self.explored[x+(y+1)*self.width]==0:
 					self.explored[x+(y+1)*self.width]=1
 					q.put((cost+1+self.heuristic(x, y+1, self.goalx[0], self.goaly[0]),(x,y+1,cost+1)))
 					discover[x+(y+1)*self.width]=x+(y)*self.width
-			if self.canTravel(x, y, 2):
+			if self.canTravel(x, y, 2):#left 
 				if self.explored[x-1+(y)*self.width]==0:
 					self.explored[x-1+(y)*self.width]=1
 					q.put((cost+1+self.heuristic(x-1, y, self.goalx[0], self.goaly[0]),(x-1,y,cost+1)))
 					discover[x-1+(y)*self.width]=x+(y)*self.width
-			if self.canTravel(x, y, 3):
+			if self.canTravel(x, y, 3):#right
 				if self.explored[x+1+(y)*self.width]==0:
 					self.explored[x+1+(y)*self.width]=1
 					q.put((cost+1+self.heuristic(x+1, y, self.goalx[0], self.goaly[0]),(x+1,y,cost+1)))
@@ -191,7 +201,7 @@ class maze:
 		return -1	
 
 	#Input : maze
-	#Output: path of maze or a false alarm
+	#Output: number of node expansion maze or a false alarm
 	#Description: In this function, we apply BFS algorithm to get the path of a maze
 	def bfs(self):
 		counter =0
@@ -214,28 +224,28 @@ class maze:
 					self.path.insert(0,current)
 				return counter
 				#for every point we pop from queue, check the four directions,
-				#if we can travel through direction a, enque the point on direction a
-				#mark the current point as visited, and recode the step before to the
+				#if we can travel through direction a, enqueue the point on direction a
+				#mark the current point as visited, and recode the step to the
 				#discovery dictionary
-			if self.canTravel(x, y, 0):
+			if self.canTravel(x, y, 0):#up
 				if self.explored[x+(y-1)*self.width]==0:
 					self.explored[x+(y-1)*self.width]=1
 					q.put((x,y-1))
 					discover[x+(y-1)*self.width]=x+(y)*self.width
 
-			if self.canTravel(x, y, 1):
+			if self.canTravel(x, y, 1):#down
 				if self.explored[x+(y+1)*self.width]==0:
 					self.explored[x+(y+1)*self.width]=1
 					q.put((x,y+1))
 					discover[x+(y+1)*self.width]=x+(y)*self.width
 
-			if self.canTravel(x, y, 2):
+			if self.canTravel(x, y, 2):#left
 				if self.explored[x-1+(y)*self.width]==0:
 					self.explored[x-1+(y)*self.width]=1
 					q.put((x-1,y))
 					discover[x-1+(y)*self.width]=x+(y)*self.width
 
-			if self.canTravel(x, y, 3):
+			if self.canTravel(x, y, 3):#right
 				if self.explored[x+1+(y)*self.width]==0:
 					self.explored[x+1+(y)*self.width]=1
 					q.put((x+1,y))
@@ -247,16 +257,18 @@ class maze:
 	#Input : maze
 	#Output: none
 	#Description: In this function, we read the solution of the maze and 
-	# write it to a txt file
+	# can write it to a txt file
 	def drawsol(self):
 		for i in range(len(self.path)):
 			self.graph[self.path[i][1]][self.path[i][0]]='.'
 		self.graph[self.starty][self.startx]='P'
-		with open('maze_result.txt', 'w') as f:#open a file and write the solution
+		'''
+		with open('maze_result.txt', 'w') as f: #open a file and write the solution
 			sys.stdout = f
 			for line in self.graph:
 				print(''.join(line))
 		f.close()
+		'''
 		return
 
 	#Input : maze
@@ -266,8 +278,8 @@ class maze:
 	def DFS(self):
 		# Use list as stack, find single goal, change maze, return nodes expanded
 		graph = copy.deepcopy(self.graph)  #make a copy to help us marked the visited point of the maze
-		x = self.startx
-		y = self.starty
+		x = self.starty
+		y = self.startx
 		node = 0
 		if x == -1 or y == -1:
 			return -1
@@ -306,11 +318,12 @@ class maze:
 	#Input : maze
 	#Output: none
 	#Description: for the path we recorded, use '.' to replace the ' '
-	# in the graph
+	# in the graph,this function is specific to DFS, since the path is stored as direction for each expansion
+	#other methods use dictionary to trace back the path
 	def drawPath(self):
 		path = self.dfspath.copy()
-		curx = self.startx
-		cury = self.starty
+		curx = self.starty
+		cury = self.startx
 		for x in path:
 			if x == 0:
 				curx -= 1
@@ -326,24 +339,30 @@ class maze:
 				self.graph[curx][cury] = '.'
 		return
 
+
 #main function
 a=maze()
 a.readmaze('mediummaze.txt')
 
-#for i in range(a.height):
-#	print(a.graph[i])
-a.findGoal()
-a.findStart()
-print(a.Astar())
-print(a.greedy())
-print(a.bfs())
 
-#print(a.graph[21][5])
-b = a.DFS()
-print(b)
-a.drawPath()
-a.printMaze()
-a.drawsol()
+a.findGoal()
+a.findStart()#find goal and start
+
+'''
+#print(a.Astar())
+#print(a.greedy())
+print(a.bfs())
+a.drawsol()#put path into graph(for astar greedy bfs) 
+a.printMaze()#print out maze to terminal(for all methods) 
+
+'''
+#for DFS
+print(a.DFS())#print the number of expansion for each point
+a.drawPath()#put path into graph (for DFS, since the path is stored as direction for each expansion
+			#other methods use dictionary to trace back the path)
+a.printMaze()#print out maze to terminal(for all methods) 
+
+
 
 
 		
