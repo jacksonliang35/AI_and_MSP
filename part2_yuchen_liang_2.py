@@ -15,6 +15,8 @@ class maze:
         self.goaly=[]
         self.startx=-1
         self.starty=-1
+
+
         return
     def readMaze(self,filename):
          self.graph= []
@@ -88,11 +90,11 @@ class maze:
         # push evaluation, length of goal , (counter,), cost (pathlength) ,position, path, goalc, explored, mstsum
         mstsum = MSTsum(goal)
         counter=0
-        q.put([heuristic3(start,goal,mstsum),len(goal),counter,0,start,path,goal,explored,mstsum])
+        q.put([heuristic2(start,goal,mstsum),len(goal),counter,0,start,path,goal,explored,mstsum])
         while not q.empty():
             counter+=1
             state = q.get()
-
+            # Decompose states
             costc = state[3]
             pos = state[4]
             x = pos[0]
@@ -101,12 +103,7 @@ class maze:
             goalc = state[6]
             explored = state[7]
             mstsum = state[8]
-            print(len(goalc))
-            '''
-            if len(goalc)==5:
-                print(path)
-                break
-            '''
+            #print(len(goalc))
 
             # Goal State
             if pos in goalc:
@@ -121,66 +118,68 @@ class maze:
             if self.canTravel(x, y, 0):
                 if explored[x-1,y]==0:
                     explored[x-1,y]=1
-                    q.put([costc+1+heuristic3((x-1,y),goalc,mstsum),len(goalc),counter,costc+1,(x-1,y),path.copy()+[0],goalc.copy(),explored,mstsum])
+                    q.put([costc+1+heuristic2((x-1,y),goalc,mstsum),len(goalc),counter,costc+1,(x-1,y),path.copy()+[0],goalc.copy(),explored,mstsum])
 
             if self.canTravel(x, y, 1):
                 if explored[x+1,y]==0:
                     explored[x+1,y]=1
-                    q.put([costc+1+heuristic3((x+1,y),goalc,mstsum),len(goalc),counter,costc+1,(x+1,y),path.copy()+[1],goalc.copy(),explored,mstsum])
+                    q.put([costc+1+heuristic2((x+1,y),goalc,mstsum),len(goalc),counter,costc+1,(x+1,y),path.copy()+[1],goalc.copy(),explored,mstsum])
 
             if self.canTravel(x, y, 2):
                 if explored[x,y-1]==0:
                     explored[x,y-1]=1
-                    q.put([costc+1+heuristic3((x,y-1),goalc,mstsum),len(goalc),counter,costc+1,(x,y-1),path.copy()+[2],goalc.copy(),explored,mstsum])
+                    q.put([costc+1+heuristic2((x,y-1),goalc,mstsum),len(goalc),counter,costc+1,(x,y-1),path.copy()+[2],goalc.copy(),explored,mstsum])
 
             if self.canTravel(x, y, 3):
                 if explored[x,y+1]==0:
                     explored[x,y+1]=1
-                    q.put([costc+1+heuristic3((x,y+1),goalc,mstsum),len(goalc),counter,costc+1,(x,y+1),path.copy()+[3],goalc.copy(),explored,mstsum])
-
-
+                    q.put([costc+1+heuristic2((x,y+1),goalc,mstsum),len(goalc),counter,costc+1,(x,y+1),path.copy()+[3],goalc.copy(),explored,mstsum])
         return -1
-
-    def drawsol(self):
-        for i in range(len(self.path)):
-            self.graph[self.path[i][1]][self.path[i][0]]='~'
-        self.graph[self.starty][self.startx]='P'
-        return
 
     def drawPath(self):
          path = self.path.copy()
          curx = self.startx
          cury = self.starty
+         goal = []
+         for i in range(len(self.goalx)):
+             goal += [(self.goalx[i],self.goaly[i])]
+         ind = ord('a')
          for x in path:
              if x==0:
                  curx -= 1
-                 self.graph[curx][cury] = '~'
              elif x==1:
                  curx += 1
-                 self.graph[curx][cury] = '~'
              elif x==2:
                  cury -= 1
-                 self.graph[curx][cury] = '~'
              else:
                  cury += 1
-                 self.graph[curx][cury] = '~'
+             if self.graph[curx][cury] == ' ':
+                 self.graph[curx][cury] = '.'
+             if (curx,cury) in goal:
+                 self.graph[curx][cury] = chr(ind)
+                 ind += 1
+         if self.graph[self.startx][self.starty] != 'P':
+             self.graph[self.startx][self.starty] = 'p'     # Overwritten starting point
 
     def printMaze(self):
           for line in self.graph:
               print(''.join(line))
 
 ''' Heuristics '''
+def heuristic1(cur,goal):
+    # Find the longest path
+    dist = []
+    for g in goal:
+        dist = dist + [d(cur,g)]
+    return max(dist)
+
 def heuristic2(cur, goal, mstsum):    #goal is a list
     # Using MST
     dist = []
     for g in goal:
         dist = dist + [d(cur,g)]
-    '''
-    # Find the longest path
-    for g in goal:
-        dist = dist + [d(cur,g)]
-    h1 = max(dist)
 
+    '''
     # Find sum of smallest distances with # of len(goal)
     n = len(goal)
     for i in range(n):
@@ -240,20 +239,20 @@ def MSTsum(goal):
                 q.put([d(goal[v[2]],goal[i]),v[2],i])
     return sum
 
+name = input("Select Maze (tiny/small/medium):")
+assert name == "tiny" or name == "small" or name == "medium"
 a=maze()
-a.readMaze('tinySearch.txt')
-a.printMaze()
-#for i in range(a.height):
-#    print(a.graph[i])
+a.readMaze(name+'Search.txt')
+
 a.findGoal()
 a.getStart()
+
 print(a.Astar())
 print(len(a.path))
 print(a.path)
+
 a.drawPath()
 a.printMaze()
+
 #print(a.greedy())
 #print(a.bfs())
-
-#print(a.graph[21][5])
-#a.drawsol()
