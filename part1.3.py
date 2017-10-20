@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import scipy.sparse as sps
 import queue
 import sys
@@ -16,6 +15,7 @@ class maze:
         self.startx=-1
         self.starty=-1
         return
+
     def readMaze(self,filename):
          self.graph= []
          with open(filename,"r") as fp:
@@ -27,6 +27,7 @@ class maze:
          self.width = len(self.graph[0])
          self.getStart()
          return
+
     def getStart(self):
          for i in range(self.height):
             for j in range(self.width):
@@ -36,19 +37,6 @@ class maze:
                     break
             if self.startx!=-1:
                 break
-    def heuristic(self, x, y, xg, yg):
-        return 0   #abs(y-yg)+abs(x-xg)
-
-
-        '''
-        for i in range(4):
-            if self.canTravel(cur[0],cur[1],i) ==False:
-                go+=1
-        sum = 0
-        for p in goal:
-            sum += abs(cur[0]-p[0])+abs(cur[1]-p[1])
-        return go*50
-        '''
 
     def findGoal(self):
          for i in range(self.height):
@@ -92,7 +80,7 @@ class maze:
         while not q.empty():
             counter+=1
             state = q.get()
-
+            # Decompose states
             costc = state[3]
             pos = state[4]
             x = pos[0]
@@ -101,12 +89,7 @@ class maze:
             goalc = state[6]
             explored = state[7]
             mstsum = state[8]
-            print(len(goalc))
-            '''
-            if len(goalc)==5:
-                print(path)
-                break
-            '''
+            #print(len(goalc))
 
             # Goal State
             if pos in goalc:
@@ -137,33 +120,32 @@ class maze:
                 if explored[x,y+1]==0:
                     explored[x,y+1]=1
                     q.put([costc+1+heuristic2((x,y+1),goalc,mstsum),len(goalc),counter,costc+1,(x,y+1),path.copy()+[3],goalc.copy(),explored,mstsum])
-
-
         return -1
-
-    def drawsol(self):
-        for i in range(len(self.path)):
-            self.graph[self.path[i][1]][self.path[i][0]]='~'
-        self.graph[self.starty][self.startx]='P'
-        return
 
     def drawPath(self):
          path = self.path.copy()
          curx = self.startx
          cury = self.starty
+         goal = []
+         for i in range(len(self.goalx)):
+             goal += [(self.goalx[i],self.goaly[i])]
+         ind = ord('a')
          for x in path:
              if x==0:
                  curx -= 1
-                 self.graph[curx][cury] = '~'
              elif x==1:
                  curx += 1
-                 self.graph[curx][cury] = '~'
              elif x==2:
                  cury -= 1
-                 self.graph[curx][cury] = '~'
              else:
                  cury += 1
-                 self.graph[curx][cury] = '~'
+             if self.graph[curx][cury] == ' ':
+                 self.graph[curx][cury] = '.'
+             if (curx,cury) in goal and self.graph[curx][cury] == '.':
+                 self.graph[curx][cury] = chr(ind)
+                 ind += 1
+         if self.graph[self.startx][self.starty] != 'P':
+             self.graph[self.startx][self.starty] = 'p'     # Overwritten starting point
 
     def printMaze(self):
           for line in self.graph:
@@ -175,23 +157,7 @@ def heuristic2(cur, goal, mstsum):    #goal is a list
     dist = []
     for g in goal:
         dist = dist + [d(cur,g)]
-    '''
-    # Find the longest path
-    for g in goal:
-        dist = dist + [d(cur,g)]
-    h1 = max(dist)
-
-    # Find sum of smallest distances with # of len(goal)
-    n = len(goal)
-    for i in range(n):
-        j = i+1
-        while j<n:
-            dist = dist + [d(goal[i],goal[j])]
-            j += 1
-    dist.sort()
-    h2 = sum(dist[0:n])
-    '''
-    return mstsum + min(dist)
+    return (mstsum + min(dist))*5
 
 def d(x,y):
     # Manhattan distance
@@ -216,22 +182,15 @@ def MSTsum(goal):
                 q.put([d(goal[v[2]],goal[i]),v[2],i])
     return sum
 
-
-
 a=maze()
-a.readMaze('smallSearch.txt')
-a.printMaze()
-#for i in range(a.height):
-#    print(a.graph[i])
+a.readMaze('bigDots.txt')
+
 a.findGoal()
 a.getStart()
+
 print(a.Astar())
 print(len(a.path))
-print(a.path)
-a.drawPath()
-a.printMaze()
+
+
 #print(a.greedy())
 #print(a.bfs())
-
-#print(a.graph[21][5])
-#a.drawsol()

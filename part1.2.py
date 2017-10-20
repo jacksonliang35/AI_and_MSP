@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import scipy.sparse as sps
 import queue
 import sys
@@ -15,9 +14,8 @@ class maze:
         self.goaly=[]
         self.startx=-1
         self.starty=-1
-
-
         return
+
     def readMaze(self,filename):
          self.graph= []
          with open(filename,"r") as fp:
@@ -29,6 +27,7 @@ class maze:
          self.width = len(self.graph[0])
          self.getStart()
          return
+
     def getStart(self):
          for i in range(self.height):
             for j in range(self.width):
@@ -38,19 +37,6 @@ class maze:
                     break
             if self.startx!=-1:
                 break
-    def heuristic(self, x, y, xg, yg):
-        return 0   #abs(y-yg)+abs(x-xg)
-
-
-        '''
-        for i in range(4):
-            if self.canTravel(cur[0],cur[1],i) ==False:
-                go+=1
-        sum = 0
-        for p in goal:
-            sum += abs(cur[0]-p[0])+abs(cur[1]-p[1])
-        return go*50
-        '''
 
     def findGoal(self):
          for i in range(self.height):
@@ -155,7 +141,7 @@ class maze:
                  cury += 1
              if self.graph[curx][cury] == ' ':
                  self.graph[curx][cury] = '.'
-             if (curx,cury) in goal:
+             if (curx,cury) in goal and self.graph[curx][cury] == '.':
                  self.graph[curx][cury] = chr(ind)
                  ind += 1
          if self.graph[self.startx][self.starty] != 'P':
@@ -166,55 +152,12 @@ class maze:
               print(''.join(line))
 
 ''' Heuristics '''
-def heuristic1(cur,goal):
-    # Find the longest path
-    dist = []
-    for g in goal:
-        dist = dist + [d(cur,g)]
-    return max(dist)
-
 def heuristic2(cur, goal, mstsum):    #goal is a list
     # Using MST
     dist = []
     for g in goal:
         dist = dist + [d(cur,g)]
-
-    '''
-    # Find sum of smallest distances with # of len(goal)
-    n = len(goal)
-    for i in range(n):
-        j = i+1
-        while j<n:
-            dist = dist + [d(goal[i],goal[j])]
-            j += 1
-    dist.sort()
-    h2 = sum(dist[0:n])
-    '''
     return mstsum + min(dist)
-
-def heuristic3(cur, goal, mstsum):
-    # Calculate min vertex
-    dist = []
-    for i in range(len(goal)):
-        dist = dist + [d(cur,goal[i])]
-    dists = sorted(dist)
-    lmin = dists[0]
-    indexmin = dist.index(dists[0])
-    # Calculate max distance
-
-    dist = [0]
-    goalr = goal[0:indexmin]+goal[indexmin+1:len(goal)]
-    for g in goalr:
-        dist = dist + [d(g,goal[indexmin])]
-    glmax = max(dist)
-    '''
-    glmax = 0
-    for i in range(len(goal)):
-        for j in range(i,len(goal)):
-            if d(goal[i],goal[j]):
-                glmax = d(goal[i],goal[j])
-    '''
-    return lmin + mstsum
 
 def d(x,y):
     # Manhattan distance
