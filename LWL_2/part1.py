@@ -13,6 +13,7 @@ class flowfree:
 		self.width=0
 		self.color=[]
 		self.colorpos=dict()
+
 		return
 
 	#Input : graph, txt file containing maze
@@ -52,13 +53,31 @@ class flowfree:
 		for line in self.graph:
 			print(''.join(line))
 
+	def var_constrain(self,pos):
+		x,y=pos[0],pos[1]
+		barricade=[]
+		if x-1>=0:
+			if self.graph[x-1][y]=='_':
+				barricade.append((x - 1,y))
+		if x + 1<self.height:
+			if self.graph[x+1][y]=='_':
+				barricade.append((x + 1, y))
+		if y - 1 >= 0:
+			if self.graph[x][y-1]=='_':
+				barricade.append((x, y - 1))
+		if y + 1 < self.width:
+			if self.graph[x][y+1]=='_':
+				barricade.append((x, y + 1))
+		return barricade
+
 a=flowfree()
 a.readgraph('input77.txt')
 a.findcolors()
 print(a.color)
 print(a.colorpos)
 a.printgraph()
-
+#print(a.colorpos['O'][0][0])
+print(a.var_constrain(a.colorpos['O'][0]))
 
 
 
