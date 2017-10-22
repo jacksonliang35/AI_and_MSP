@@ -230,13 +230,13 @@ class flowfree:
 
 		goal = self.color2pos[color][index2]
 
-		# Set up goal counter & explored
+		# Set up goal & explored
 		explored = np.zeros((self.height, self.width))
 		explored[start[0], start[1]] = 1
 		q = queue.PriorityQueue()
 		path.append(start)
-		# push evaluation, length of goal , (counter,), cost (pathlength) ,position, path, goalc, explored, mstsum
-		q.put((0,start,path))
+		# push 
+		q.put((0,start,path,explored))
 		while not q.empty():
 			state = q.get()
 			cost = state[0]
@@ -244,37 +244,42 @@ class flowfree:
 			x=pos[0]
 			y=pos[1]
 			path1 = state[2]
+			explored = state[3]
 			temp=1
-			if self.boundary[x,y] ==1:
+			if self.boundary[x,y] ==1: #if on boundary cost=0
 				temp=0
 			# Goal State
 			if cost > depth:
 				return pathlist
 			if pos==goal:
-				path1.append(goal)
-				pathlist=pathlist+path1
+				if cost==depth: #only return specified depth path
+					pathlist=pathlist+[path1]
 				continue
-				# Recalculating MST
+	
 			if self.canTravel(x, y, 0,color):
 				if explored[x - 1, y] == 0:
-					explored[x - 1, y] = 1
-					q.put((cost+temp,(x-1,y),path1+[(x-1,y)]))
+					exploredtemp=copy.deepcopy(explored)
+					exploredtemp[x - 1, y] = 1
+					q.put((cost+temp,(x-1,y),path1+[(x-1,y)],exploredtemp))
 
 			if self.canTravel(x, y, 1,color):
 				if explored[x + 1, y] == 0:
-					explored[x + 1, y] = 1
-					q.put((cost + temp, (x + 1, y), path1 + [(x + 1, y)]))
+					exploredtemp=copy.deepcopy(explored)
+					exploredtemp[x + 1, y] = 1
+					q.put((cost + temp, (x + 1, y), path1 + [(x + 1, y)],exploredtemp))
 
 			if self.canTravel(x, y, 2,color):
 				if explored[x, y - 1] == 0:
-					explored[x, y - 1] = 1
-					q.put((cost + temp, (x, y-1), path1 + [(x, y - 1)]))
+					exploredtemp=copy.deepcopy(explored)
+					exploredtemp[x, y - 1] = 1
+					q.put((cost + temp, (x, y-1), path1 + [(x, y - 1)],exploredtemp))
 
 			if self.canTravel(x, y, 3,color):
 				if explored[x, y + 1] == 0:
-					explored[x, y + 1] = 1
-					q.put((cost + temp, (x , y+1), path1 + [(x, y+1)]))
-		return -1
+					exploredtemp=copy.deepcopy(explored)
+					exploredtemp[x, y + 1] = 1
+					q.put((cost + temp, (x , y+1), path1 + [(x, y+1)],exploredtemp))
+		return pathlist
 
 	def backtracking(self):
 		if self.backtracking_h():
@@ -320,8 +325,10 @@ class flowfree:
 	def change_graph(self,path,color):
 		for i in path:
 			self.graph[i[0]][i[1]] = color
+		#print graph
 		for line in self.graph:
 			print(''.join(line))
+		print()
 
 
 	def backtracking_h(self):
@@ -329,26 +336,22 @@ class flowfree:
 			return True
 		color = self.next_variable() # choose which variable to assign
 		Search_result=[]
-		for i in range(0,int(4*self.width)):
-			temp=self.Search(color,i)
-			if temp==[] or temp==-1:
-				continue
-			Search_result+=[temp]# search for the paths return a list according to priority
-		for path in Search_result:
-			#if path is consistant:
-			#change graph,boundary,colors
-			tempg=copy.deepcopy(self.graph)
-			tempb=copy.deepcopy(self.boundary)
-			tempc=copy.deepcopy(self.colors)
-			self.change_boundary(path)
-			self.change_graph(path,color)
-			self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color]
-			result = self.backtracking_h()
-			if result != False:
-				return result
-			self.graph=tempg #restore graph,boundary,colors
-			self.boundary=tempb
-			self.colors=tempc
+		for i in range(4*self.width):
+			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
+			for path in Search_result:
+				#change graph,boundary,colors
+				tempg=copy.deepcopy(self.graph)
+				tempb=copy.deepcopy(self.boundary)
+				tempc=copy.deepcopy(self.colors)
+				self.change_boundary(path)
+				self.change_graph(path,color)
+				self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
+				result = self.backtracking_h()
+				if result != False:
+					return result
+				self.graph=tempg #restore graph,boundary,colors
+				self.boundary=tempb
+				self.colors=tempc
 		return False
 
 
