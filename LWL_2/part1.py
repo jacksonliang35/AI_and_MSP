@@ -197,27 +197,27 @@ class flowfree:
 		return curpath
 
 
-	def canTravel(self, x, y, dir):
+	def canTravel(self, x, y, dir,color):
 		if (x < 0) or (y < 0) or (x >= self.height) or (y >= self.width):
 			return False
 		elif (dir == 0 and x == 0) or (dir == 1 and x == self.height - 1) or (dir == 2 and y == 0) or (
 				dir == 3 and y == self.width - 1):
 			return False;
 		elif dir == 0:  # up
-			return (self.graph[x - 1][y] == '_')
+			return (self.graph[x - 1][y] == '_' and self.graph[x - 1][y] == color )
 		elif dir == 1:  # down
-			return (self.graph[x + 1][y] == '_')
+			return (self.graph[x + 1][y] == '_' and self.graph[x + 1][y] == color)
 		elif dir == 2:  # left
-			return (self.graph[x][y - 1] == '_')
+			return (self.graph[x][y - 1] == '_' and self.graph[x][y - 1] == color)
 		elif dir == 3:  # right
-			return (self.graph[x][y + 1] == '_')
+			return (self.graph[x][y + 1] == '_' and self.graph[x][y + 1] == color)
 
-	def Search(self,graph,boundary,color,depth):
+	def Search(self,color,depth):
 		cost=0
 		path = []
 		pathlist=[]
 		index=1
-		if len(self.var_constrain(self.color2pos[color][0]))>len(self.var_constrain(self.color2pos[color][1])):
+		if len(self.var_constrain(self.color2pos[color][0])) > len(self.var_constrain(self.color2pos[color][1])):
 			index = 1
 		else:
 			index =0
@@ -234,6 +234,7 @@ class flowfree:
 		explored = np.zeros((self.height, self.width))
 		explored[start[0], start[1]] = 1
 		q = queue.PriorityQueue()
+		path.append(start)
 		# push evaluation, length of goal , (counter,), cost (pathlength) ,position, path, goalc, explored, mstsum
 		q.put((0,start,path))
 		while not q.empty():
@@ -243,106 +244,108 @@ class flowfree:
 			x=pos[0]
 			y=pos[1]
 			path1 = state[2]
+			print(path1)
+			print(goal)
 			temp=1
-			if boundary[x,y] ==1:
+			if self.boundary[x,y] ==1:
 				temp=0
 			# Goal State
 			if cost > depth:
 				return pathlist
-			if pos ==goal:
+			if pos[0] ==goal[0] and pos[1]==goal[1]:
 				pathlist.append(path1)
 				# Recalculating MST
-			if self.canTravel(x, y, 0):
+			if self.canTravel(x, y, 0,color):
 				if explored[x - 1, y] == 0:
 					explored[x - 1, y] = 1
 					q.put((cost+temp,(x-1,y),path1+[(x-1,y)]))
 
-			if self.canTravel(x, y, 1):
+			if self.canTravel(x, y, 1,color):
 				if explored[x + 1, y] == 0:
 					explored[x + 1, y] = 1
 					q.put((cost + temp, (x + 1, y), path1 + [(x + 1, y)]))
 
-			if self.canTravel(x, y, 2):
+			if self.canTravel(x, y, 2,color):
 				if explored[x, y - 1] == 0:
 					explored[x, y - 1] = 1
 					q.put((cost + temp, (x, y-1), path1 + [(x, y - 1)]))
 
-			if self.canTravel(x, y, 3):
+			if self.canTravel(x, y, 3,color):
 				if explored[x, y + 1] == 0:
 					explored[x, y + 1] = 1
 					q.put((cost + temp, (x , y+1), path1 + [(x, y+1)]))
 		return -1
 
 	def backtracking(self):
-		graph = self.graph
-		boundary = self.boundary
-		colors = self.colors
-		if self.backtracking_h(graph,boundary,colors):
+		if self.backtracking_h():
 			for line in graph:
 				print(''.join(line))
 
-	def change_boundary(self,graph,boundary,path):
+	def change_boundary(self,path):
 		for i in path:
 			x=i[0]
 			y=i[1]
-			if graph[x][y] != '_' :
-				boundary[x,y] = 0 # not a boundary if a path is applied
-
+			if self.graph[x][y] != '_' :
+				self.boundary[x,y] = 0 # not a boundary if a path is applied
 			if x - 1 >= 0 and y - 1 >= 0: # set surrounding area to be boundary
-				if graph[x-1][y-1] == '_' :
-					boundary[x-1,y] = 1
+				if self.graph[x-1][y-1] == '_' :
+					self.boundary[x-1,y] = 1
 			if x - 1 >= 0:
-				if graph[x-1][y] == '_' :
-					boundary[x-1,y] = 1
+				if self.graph[x-1][y] == '_' :
+					self.boundary[x-1,y] = 1
 			if x + 1 < self.height:
-				if graph[x+1][y] == '_' :
-					boundary[x+1,y] = 1
+				if self.graph[x+1][y] == '_' :
+					self.boundary[x+1,y] = 1
 			if x + 1 < self.height and y - 1 >= 0:
-				if graph[x+1][y-1] == '_' :
-					boundary[x-1,y-1] = 1
+				if self.graph[x+1][y-1] == '_' :
+					self.boundary[x-1,y-1] = 1
 			if y - 1 >= 0:
-				if graph[x][y-1] == '_' :
-					boundary[x,y-1] = 1
+				if self.graph[x][y-1] == '_' :
+					self.boundary[x,y-1] = 1
 			if y + 1 < self.width:
 				if graph[x][y+1] == '_' :
-					boundary[x,y+1] = 1
+					self.boundary[x,y+1] = 1
 			if x + 1 < self.height and y + 1 <self.width:
-				if graph[x+1][y+1] == '_' :
-					boundary[x+1,y+1] = 1
+				if self.graph[x+1][y+1] == '_' :
+					self.boundary[x+1,y+1] = 1
 			if x - 1 >= 0 and y + 1 < self.width:
-				if graph[x-1][y+1] == '_' :
-					boundary[x-1,y+1] = 1
+				if self.graph[x-1][y+1] == '_' :
+					self.boundary[x-1,y+1] = 1
 
 
 
-	def change_graph(self,graph,path,color):
+	def change_graph(self,path,color):
 		for i in path:
-			graph[i[0]][i[1]] = color
+			self.graph[i[0]][i[1]] = color
 
-	def backtracking_h(self,graph,boundary,colors):
+	def backtracking_h(self):
 		if self.is_complete(): # find all of the paths
 			return True
 		color = self.next_variable() # choose which variable to assign
 		Search_result=[]
 		for i in range(0,int(4*self.width)):
-			Search_result+=self.Search(graph,boundary,color,i)# search for the paths return a list according to priority
+			temp=self.Search(color,i)
+			if temp==[] or temp==-1:
+				continue
+			Search_result+=[temp]# search for the paths return a list according to priority
+		print(Search_result)
 		for path in Search_result:
 			#if path is consistant:
 			#change graph,boundary,colors
-			tempg=graph.copy()
-			tempb=boundary.copy()
-			tempc=colors.copy()
-			self.change_boundary(boundary,path)
-			self.change_graph(graph,path,color)
-			colors=[colors[i] for i in range(len(colors)) if colors[i] != color ]
-			result = self.backtracking_h(graph,boundary,colors)
+			tempg=self.graph.copy()
+			tempb=self.boundary.copy()
+			tempc=self.colors.copy()
+			self.change_boundary(path)
+			self.change_graph(path,color)
+			self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color]
+			result = self.backtracking_h()
 			if result != False:
 				return result
-			graph=tempg #restore graph,boundary,colors
-			boundary=tempb
-			colors=tempc
-
+			self.graph=tempg #restore graph,boundary,colors
+			self.boundary=tempb
+			self.colors=tempc
 		return False
+
 
 	def is_complete(self):
 		for line in self.graph:
@@ -353,8 +356,8 @@ class flowfree:
 
 	def next_variable(self):
 		colors = self.color2pos
-		# Check both on boundary
 
+		# Check both on boundary
 		# Check openings
 		op = dict()
 		for c in colors:
