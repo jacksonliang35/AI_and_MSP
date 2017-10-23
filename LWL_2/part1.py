@@ -79,16 +79,14 @@ class flowfree:
 				barricade.append((x, y + 1))
 		return barricade
 
-	def LBFS(self, start, goal, depth):
+	def isconnected(self, start, goal):
 
 		height = self.height
 		width  = self.width
 
 		startx, starty = start[0], start[1]
 		goalx, goaly = goal[0], goal[1]
-		print('start')
-		print(startx,starty)
-		pathlist = []
+
 		qx = deque([])
 		qy = deque([])
 
@@ -100,7 +98,8 @@ class flowfree:
 			for j in range(0, width):
 				if self.graph[i][j] != '_':
 					visited[i][j] = 1
-
+		#print(visited)
+		visited[goalx][goaly]=0
 		curx = startx
 		cury = starty
 
@@ -110,24 +109,21 @@ class flowfree:
 
 		dirx = [1, 0, -1, 0]
 		diry = [0, 1, 0, -1]
+		flag=False
 
 		while len(qx) != 0:
+			#print(visited)
 			curx = qx.popleft()
 			cury = qy.popleft()
-
-			curpath = self.getPath(tracex, tracey, startx, starty, curx , cury)
-			print('get one')
-			print(curpath)
-			if curx == goalx and cury == goaly and len(path) == depth:
-				pathlist.append(curpath)
-				continue
-			print('113')
-			if len(curpath) > depth:
+			#print(curx,cury)
+			if curx == goalx and cury == goaly:
+				flag=True
 				break
 
 			for i in range(0, 4):
 				tempx = curx + dirx[i]
 				tempy = cury + diry[i]
+
 				if tempx < 0 or tempx >= height or tempy < 0 or tempy >= width:
 					continue
 
@@ -137,64 +133,8 @@ class flowfree:
 					visited[tempx][tempy] = 2
 					qx.append(tempx)
 					qy.append(tempy)
-			print('129')
-		return pathlist
+		return flag
 
-	def getPath(self, tracex, tracey, s_row, s_col, e_row, e_col):
-
-		flag = 0
-		pathx = []
-		pathy = []
-		print(tracex)
-		print(tracey)
-		print('138')
-		if np.sum(tracex) == 0: return pathx
-
-		pathx.append(e_row)
-		pathy.append(e_col)
-		a = tracex[e_row][e_col]
-		b = tracey[e_row][e_col]
-		ad = 0
-		temx = a
-		temy = b
-		#print(type(temx),temx,temy,tracex[int(temx)][int(temy)])
-		#return pathx
-		print(s_row,s_col)
-		temx = int(temx)
-		temy = int(temy)
-		curpath = []
-		print(temx,temy)
-		if temx == s_row and temy == s_col:
-			curpath.append((temx,temy))
-			curpath.append((s_row,s_col))
-			return curpath
-		while flag == 0:
-			#print('151')
-			temx=int(temx)
-			temy=int(temy)
-			#print(temx,temy)
-			pathx.append(temx)
-			pathy.append(temy)
-
-			chex = tracex[temx][temy]
-			chey = tracey[temx][temy]
-
-			temx = chex
-			temy = chey
-
-			#print(temx,temy)
-			if temx == s_row and temy == s_col:
-				# print("here")
-				pathx.append(s_row)
-				pathy.append(s_col)
-				flag = 1
-				break
-		pathx.reverse()
-		pathy.reverse()
-
-		for i in range(0, len(pathx)):
-			curpath.append((pathx[i], pathy[i]))
-		return curpath
 
 
 	def canTravel(self, x, y, dir,color):
@@ -445,7 +385,8 @@ def next_bound(graph,pastpos,curr):
 """
 
 a=flowfree()
-a.readgraph('input991.txt')
+a.readgraph('input77.txt')
 a.findcolors()
 a.printgraph()
+print(a.isconnected(a.color2pos['G'][0],a.color2pos['G'][1]))
 a.backtracking()
