@@ -202,9 +202,9 @@ class flowfree:
 			return False
 		elif (dir == 0 and x == 0) or (dir == 1 and x == self.height - 1) or (dir == 2 and y == 0) or (
 				dir == 3 and y == self.width - 1):
-			return False;
+			return False
 		elif dir == 0:  # up
-			return (self.graph[x - 1][y] == '_' or self.graph[x - 1][y] == color )
+			return (self.graph[x - 1][y] == '_' or self.graph[x - 1][y] == color)
 		elif dir == 1:  # down
 			return (self.graph[x + 1][y] == '_' or self.graph[x + 1][y] == color)
 		elif dir == 2:  # left
@@ -216,27 +216,34 @@ class flowfree:
 		cost=0
 		path = []
 		pathlist=[]
+
+		# Decide start and goal
 		index=1
 		if len(self.var_constrain(self.color2pos[color][0])) > len(self.var_constrain(self.color2pos[color][1])):
 			index = 1
 		else:
 			index =0
-		start = self.color2pos[color][index]
+		start = self.color2pos[color][index]	# Start at the node with more constraint
 		index2=0
 		if index ==1:
 			index2=0
 		else:
 			index2=1
+		goal = self.color2pos[color][index2]	# End at the node with less constraint
 
-		goal = self.color2pos[color][index2]
-
-		# Set up goal & explored
+		# Set up explored
 		explored = np.zeros((self.height, self.width))
 		explored[start[0], start[1]] = 1
 		q = queue.PriorityQueue()
 		path.append(start)
-		# push 
+		# push
 		q.put((0,start,path,explored))
+		"""
+		if color=='O' and depth == 0:
+			print('-------------------------------')
+			print(self.boundary)
+			print('-------------------------------')
+		"""
 		while not q.empty():
 			state = q.get()
 			cost = state[0]
@@ -245,9 +252,11 @@ class flowfree:
 			y=pos[1]
 			path1 = state[2]
 			explored = state[3]
-			temp=1
-			if self.boundary[x,y] ==1: #if on boundary cost=0
-				temp=0
+			if self.has_zigzag(explored,path1,start,goal):
+				continue
+
+			nbd2bd = 1		# i.e. not (boundary to boundary)
+
 			# Goal State
 			if cost > depth:
 				return pathlist
@@ -255,31 +264,63 @@ class flowfree:
 				if cost==depth: #only return specified depth path
 					pathlist=pathlist+[path1]
 				continue
-	
+
+
 			if self.canTravel(x, y, 0,color):
 				if explored[x - 1, y] == 0:
 					exploredtemp=copy.deepcopy(explored)
 					exploredtemp[x - 1, y] = 1
-					q.put((cost+temp,(x-1,y),path1+[(x-1,y)],exploredtemp))
+					nextpath = path1+[(x-1,y)]
+					if self.boundary[x-1,y] == 1 and self.boundary[x,y] == 1: #if boundary to boundary cost=0
+						nbd2bd = 0
+					q.put((cost+nbd2bd,(x-1,y),nextpath,exploredtemp))
 
 			if self.canTravel(x, y, 1,color):
 				if explored[x + 1, y] == 0:
 					exploredtemp=copy.deepcopy(explored)
 					exploredtemp[x + 1, y] = 1
-					q.put((cost + temp, (x + 1, y), path1 + [(x + 1, y)],exploredtemp))
+					nextpath = path1+[(x+1,y)]
+					if self.boundary[x+1,y] == 1 and self.boundary[x,y] == 1: #if boundary to boundary cost=0
+						nbd2bd = 0
+					q.put((cost+nbd2bd,(x+1,y),nextpath,exploredtemp))
 
 			if self.canTravel(x, y, 2,color):
 				if explored[x, y - 1] == 0:
 					exploredtemp=copy.deepcopy(explored)
-					exploredtemp[x, y - 1] = 1
-					q.put((cost + temp, (x, y-1), path1 + [(x, y - 1)],exploredtemp))
+					exploredtemp[x, y-1] = 1
+					nextpath = path1+[(x,y-1)]
+					if self.boundary[x,y-1] == 1 and self.boundary[x,y] == 1: #if boundary to boundary cost=0
+						nbd2bd = 0
+					q.put((cost+nbd2bd,(x,y-1),nextpath,exploredtemp))
 
 			if self.canTravel(x, y, 3,color):
 				if explored[x, y + 1] == 0:
 					exploredtemp=copy.deepcopy(explored)
-					exploredtemp[x, y + 1] = 1
-					q.put((cost + temp, (x , y+1), path1 + [(x, y+1)],exploredtemp))
+					exploredtemp[x, y+1] = 1
+					nextpath = path1+[(x,y+1)]
+					if self.boundary[x,y+1] == 1 and self.boundary[x,y] == 1: #if boundary to boundary cost=0
+						nbd2bd = 0
+					q.put((cost+nbd2bd,(x,y+1),nextpath,exploredtemp))
 		return pathlist
+
+	def has_zigzag(self,explored,path,start,goal):
+		for p in path:
+			x = p[0]
+			y = p[1]
+			sum = 0
+			if x>0:
+				sum += explored[x-1,y]
+			if x<self.height-1:
+				sum += explored[x+1,y]
+			if y>0:
+				sum += explored[x,y-1]
+			if y<self.width-1:
+				sum += explored[x,y+1]
+			if (p==start or p==goal) and sum>1:
+				return True
+			if sum>2:
+				return True
+		return False
 
 	def backtracking(self):
 		if self.backtracking_h():
@@ -287,48 +328,53 @@ class flowfree:
 				print(''.join(line))
 
 	def change_boundary(self,path):
+		print()
 		for i in path:
 			x=i[0]
 			y=i[1]
 			if x - 1 >= 0 and y - 1 >= 0: # set surrounding area to be boundary
-				if self.graph[x-1][y-1] == '_' :
-					self.boundary[x-1,y] = 1
+				if self.boundary[x-1,y-1] == 0:
+					self.boundary[x-1,y-1] = 1
 			if x - 1 >= 0:
-				if self.graph[x-1][y] == '_' :
+				if self.boundary[x-1,y] == 0:
 					self.boundary[x-1,y] = 1
 			if x + 1 < self.height:
-				if self.graph[x+1][y] == '_' :
+				if self.boundary[x+1,y] == 0:
 					self.boundary[x+1,y] = 1
 			if x + 1 < self.height and y - 1 >= 0:
-				if self.graph[x+1][y-1] == '_' :
-					self.boundary[x-1,y-1] = 1
+				if self.boundary[x+1,y] == 0:
+					self.boundary[x+1,y-1] = 1
 			if y - 1 >= 0:
-				if self.graph[x][y-1] == '_' :
+				if self.boundary[x,y-1] == 0:
 					self.boundary[x,y-1] = 1
 			if y + 1 < self.width:
-				if self.graph[x][y+1] == '_' :
+				if self.boundary[x,y+1] == 0:
 					self.boundary[x,y+1] = 1
 			if x + 1 < self.height and y + 1 <self.width:
-				if self.graph[x+1][y+1] == '_' :
+				if self.boundary[x+1,y+1] == 0:
 					self.boundary[x+1,y+1] = 1
 			if x - 1 >= 0 and y + 1 < self.width:
-				if self.graph[x-1][y+1] == '_' :
+				if self.boundary[x-1,y+1] == 0:
 					self.boundary[x-1,y+1] = 1
-
+		for i in path:
+			self.boundary[i[0],i[1]] = 2
+		"""
 		for x in range(self.height):
 			for y in range(self.width):
 				if self.graph[x][y] != '_' :
 					self.boundary[x,y] = 0 # not a boundary if a path is applied
-
+		"""
 
 
 	def change_graph(self,path,color):
 		for i in path:
 			self.graph[i[0]][i[1]] = color
 		#print graph
+		"""
 		for line in self.graph:
 			print(''.join(line))
 		print()
+		"""
 
 
 	def backtracking_h(self):
@@ -338,6 +384,12 @@ class flowfree:
 		Search_result=[]
 		for i in range(4*self.width):
 			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
+			"""
+			if color=='O':
+				print(i)
+				print(Search_result)
+				print('--------------------')
+			"""
 			for path in Search_result:
 				#change graph,boundary,colors
 				tempg=copy.deepcopy(self.graph)
@@ -393,15 +445,7 @@ def next_bound(graph,pastpos,curr):
 """
 
 a=flowfree()
-a.readgraph('input77.txt')
+a.readgraph('input991.txt')
 a.findcolors()
-print(a.colors)
-print(a.color2pos)
 a.printgraph()
-#print(a.colorpos['O'][0][0])
-print(a.var_constrain(a.color2pos['O'][0]))
-
 a.backtracking()
-
-
-		
