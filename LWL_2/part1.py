@@ -310,16 +310,13 @@ class flowfree:
 		for i in path:
 			self.graph[i[0]][i[1]] = color
 		#print graph
-		"""
+
 		for line in self.graph:
 			print(''.join(line))
 		print()
-		"""
 
 
 	def backtracking_h(self):
-		if self.is_complete(): # find all of the paths
-			return True
 		color = self.next_variable() # choose which variable to assign
 		Search_result=[]
 		for i in range(4*self.width):
@@ -331,16 +328,19 @@ class flowfree:
 				print('--------------------')
 			"""
 			for path in Search_result:
-				#change graph,boundary,colors
+                #change graph,boundary,colors
 				tempg=copy.deepcopy(self.graph)
 				tempb=copy.deepcopy(self.boundary)
 				tempc=copy.deepcopy(self.colors)
 				self.change_boundary(path)
 				self.change_graph(path,color)
 				self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
-				result = self.backtracking_h()
-				if result != False:
-					return result
+				if self.is_complete():
+					return True
+				if not self.will_fail():
+					result = self.backtracking_h()
+					if result != False:
+						return result
 				self.graph=tempg #restore graph,boundary,colors
 				self.boundary=tempb
 				self.colors=tempc
@@ -356,37 +356,24 @@ class flowfree:
 
 	def next_variable(self):
 		colors = self.color2pos
-
-		# Check both on boundary
 		# Check openings
 		op = dict()
 		for c in colors:
 			if c in self.colors:
 				op[c] = len(self.var_constrain(colors[c][0]))*len(self.var_constrain(colors[c][1]))
 		return min(op, key=op.get)
-"""
+
 	def will_fail(self):
 		# Check color connectedness
-		for
+		for c in self.colors:
+			if not self.isconnected(self.color2pos[c][0],self.color2pos[c][1]):
+				return True
+		return False
 
-def next_bound(graph,pastpos,curr):
-	# pastpos = {0,1,2,3} = {up,right,down,left}
-	x = curr[0]
-	y = curr[1]
-	for i in range(1,4)+[pastpos]*4:
-		if (i%4 == 0 and x>0 and graph[x-1][y]==1):
-			return (x-1,y)
-		if (i%4 == 1 and y<graph.width-1 and graph[x][y+1]==1):
-			return (x,y+1)
-		if (i%4 == 2 and x<graph.height-1 and graph[x+1][y]==1):
-			return (x+1,y)
-		if (i%4 == 3 and y>0 and graph[x][y-1]==1):
-			return (x,y-1)
-"""
 
 a=flowfree()
-a.readgraph('input77.txt')
+a.readgraph('input991.txt')
+a.printgraph()
 a.findcolors()
 a.printgraph()
-print(a.isconnected(a.color2pos['G'][0],a.color2pos['G'][1]))
 a.backtracking()
