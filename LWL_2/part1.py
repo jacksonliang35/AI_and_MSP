@@ -4,9 +4,10 @@ import numpy as np
 import queue
 import sys
 import copy
+import time
 from collections import deque
 class flowfree:
-	#We use a stracture to record the basic information of graph which include the color position, width, height
+	#We use a structure to record the basic information of graph which include the color position, width, height
 	def __init__(self, graph=[], height=0, width=0, colors=[], color2pos=dict(), pos2color=dict(),boundary=np.zeros((0,0))):
 		self.graph=[]
 		self.height=0
@@ -27,14 +28,16 @@ class flowfree:
 			for line in fp:
 				self.graph.append(list(line[0:len(line)-1]))
 		fp.close()
+		# Construct height & width
 		self.height = len(self.graph)
 		self.width = len(self.graph[0])
+		# Construct Boundary
 		self.boundary = np.zeros((self.width,self.height))
-		# Assuming square graph
 		for k in range(self.width):
-			self.boundary[0][k] = 1
+			self.boundary[0][k] = 1	
+			self.boundary[self.height-1][k] = 1
+		for k in range(self.height):
 			self.boundary[k][0] = 1
-			self.boundary[self.width-1][k] = 1
 			self.boundary[k][self.width-1] = 1
 		return
 
@@ -263,12 +266,12 @@ class flowfree:
 		return False
 
 	def backtracking(self):
-		if self.backtracking_h():
+		if self.backtracking_h_smart():
 			for line in self.graph:
 				print(''.join(line))
 
 	def change_boundary(self,path):
-		print()
+		#print()
 		for i in path:
 			x=i[0]
 			y=i[1]
@@ -310,13 +313,38 @@ class flowfree:
 		for i in path:
 			self.graph[i[0]][i[1]] = color
 		#print graph
-
+		"""
 		for line in self.graph:
 			print(''.join(line))
 		print()
+		"""
+
+	def backtracking_h_dumb(self):
+		color = self.colors[0]
+		Search_result=[]
+		for i in range(4*self.width):
+			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
+			for path in Search_result:
+                #change graph,boundary,colors
+				tempg=copy.deepcopy(self.graph)
+				tempb=copy.deepcopy(self.boundary)
+				tempc=copy.deepcopy(self.colors)
+				self.change_boundary(path)
+				self.change_graph(path,color)
+				self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
+				if self.is_complete():
+					return True
+				result = self.backtracking_h_dumb()
+				if result != False:
+					return result
+				self.graph=tempg #restore graph,boundary,colors
+				self.boundary=tempb
+				self.colors=tempc
+		return False
 
 
-	def backtracking_h(self):
+
+	def backtracking_h_smart(self):
 		color = self.next_variable() # choose which variable to assign
 		Search_result=[]
 		for i in range(4*self.width):
@@ -338,7 +366,7 @@ class flowfree:
 				if self.is_complete():
 					return True
 				if not self.will_fail():
-					result = self.backtracking_h()
+					result = self.backtracking_h_smart()
 					if result != False:
 						return result
 				self.graph=tempg #restore graph,boundary,colors
@@ -368,12 +396,51 @@ class flowfree:
 		for c in self.colors:
 			if not self.isconnected(self.color2pos[c][0],self.color2pos[c][1]):
 				return True
+		# Check empty set
+		boundcopy = copy.deepcopy(self.boundary)
+		for i in range(self.height):
+			for j in range(self.width):
+				if self.has_empty_set(boundcopy,i,j):
+					return True
 		return False
 
 
+	def has_empty_set(self,boundary,i,j):
+		if boundary[i,j] > 1:
+			return False
+		h = self.height
+		w = self.width
+		no_color = True
+		q = queue.Queue()
+		q.put((i,j))
+		while not q.empty():
+			pos = q.get()
+			x = pos[0]
+			y = pos[1]
+			# Check if it is a color position
+			if self.graph[x][y] != '_':
+				no_color = False
+			# Change boundary map value
+			boundary[x,y] = 3
+			# Push neighbors into the queue
+			if x>0 and boundary[x-1,y]<2:
+				q.put((x-1,y))
+			if x<h-1 and boundary[x+1,y]<2:
+				q.put((x+1,y))
+			if y>0 and boundary[x,y-1]<2:
+				q.put((x,y-1))
+			if y<w-1 and boundary[x,y+1]<2:
+				q.put((x,y+1))
+		return no_color
+
+
+
 a=flowfree()
-a.readgraph('input991.txt')
+a.readgraph('input77.txt')
 a.printgraph()
 a.findcolors()
 a.printgraph()
+start = time.time()
 a.backtracking()
+end = time.time()
+print(end - start)
