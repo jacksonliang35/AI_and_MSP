@@ -265,8 +265,13 @@ class flowfree:
 				return True
 		return False
 
-	def backtracking(self):
+	def backtracking_smart(self):
 		if self.backtracking_h_smart():
+			for line in self.graph:
+				print(''.join(line))
+
+	def backtracking_dumb(self):
+		if self.backtracking_h_dumb():
 			for line in self.graph:
 				print(''.join(line))
 
@@ -313,14 +318,16 @@ class flowfree:
 		for i in path:
 			self.graph[i[0]][i[1]] = color
 		#print graph
-		"""
+		
 		for line in self.graph:
 			print(''.join(line))
 		print()
-		"""
+		
 
 	def backtracking_h_dumb(self):
-		color = self.colors[0]
+		temp=np.arange(len(self.colors))
+		np.random.shuffle(temp)
+		color=self.colors[temp[0]] 
 		Search_result=[]
 		for i in range(4*self.width):
 			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
@@ -436,11 +443,11 @@ class flowfree:
 
 
 a=flowfree()
-a.readgraph('input77.txt')
+a.readgraph('input10101.txt')
 a.printgraph()
 a.findcolors()
 a.printgraph()
 start = time.time()
-a.backtracking()
+a.backtracking_smart()
 end = time.time()
 print(end - start)
