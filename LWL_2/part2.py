@@ -4,7 +4,7 @@ import copy
 
 class Board:
     def __init__(self):
-        # Parameters:config, remain, white, black
+        # Parameters:config, remain, workers
         config = np.zeros((8,8))   # Empty = 0
         config[0:2] = 2*np.ones((2,8))  # Black = 2
         config[6:8] = np.ones((2,8))    # White = 1
@@ -137,20 +137,21 @@ class Board:
         return 2*(30-self.remain[2-color]) + random.random()
 
     # Search Strategies
-    def minmax(self,depth,color):
+    def minmax(self,config,workers,depth,color):
     	if depth==0 or self.hasfinished():
     		return self.oh1(color)
+
     	if color==0:   # White
             strategy = ((-1,-1),-1)
     		value = float('-inf')
     		for w in self.workers[color-1]:
                 for dir in range(3):
-                    if board.canMove(w,dir):
+                    if self.canMove(w,dir):
                         newboard = copy.deepcopy(board)
                         newboard.move(w,dir)
             			curval=minmax(depth-1,newboard,color,False)
             			if value < curval:
-                            value = 	curval
+                            value = curval
                             strategy = (w,dir)
     		return strategy
     	else:  # Black
