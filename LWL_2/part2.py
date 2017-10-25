@@ -1,16 +1,24 @@
 import numpy as np
 import random
+import copy
 
 class Board:
     def __init__(self):
-        # Parameters: height, width, config, remain
-        self.height = 8
-        self.width = 8
+        # Parameters:config, remain, white, black
         config = np.zeros((8,8))   # Empty = 0
         config[0:2] = 2*np.ones((2,8))  # Black = 2
         config[6:8] = np.ones((2,8))    # White = 1
         self.config = config
         self.remain = np.array([16,16]) # [white,black]
+        self.workers = []
+        white = []
+        black = []
+        for i in range(8):
+            white.append((6,i))
+            white.append((7,i))
+            black.append((0,i))
+            black.append((1,i))
+        self.workers = [white,black]
 
     def hasfinished(self):
         # Returns {0, 1, 2} = {not finished, white wins, black wins}
@@ -38,10 +46,6 @@ class Board:
                     b += ['b']
             print(''.join(b))
         print()
-
-    def move(self,i,j,dir):
-        return
-
 
     def canMove(self,pos,dir):
         # dir = {0,1,2} = {forward left, forward, forward right}
@@ -91,44 +95,101 @@ class Board:
             return
         elif self.config[pos] == 1:
             if dir==0:
+                if self.config[(pos[0]-1,pos[1]-1)] = 2:
+                    self.remain[1] -= 1
+                    self.workers[1].remove((pos[0]-1,pos[1]-1))
                 self.config[(pos[0]-1,pos[1]-1)] = 1
+                self.workers[0].append((pos[0]-1,pos[1]-1))
             elif dir==1:
                 self.config[(pos[0]-1,pos[1])] = 1
+                self.workers[0].append((pos[0]-1,pos[1]))
             elif dir==2:
+                if self.config[(pos[0]-1,pos[1]+1)] = 2:
+                    self.remain[1] -= 1
+                    self.workers[1].remove((pos[0]-1,pos[1]+1))
+                self.workers[0].append((pos[0]-1,pos[1]+1))
                 self.config[(pos[0]-1,pos[1]+1)] = 1
+            self.workers[0].remove(pos)
+
         elif self.config[pos] == 2:
             if dir==0:
+                if self.config[(pos[0]+1,pos[1]+1)] = 1:
+                    self.remain[0] -= 1
+                    self.workers[0].remove((pos[0]+1,pos[1]+1))
                 self.config[(pos[0]+1,pos[1]+1)] = 2
+                self.workers[1].append((pos[0]+1,pos[1]+1))
             elif dir==1:
                 self.config[(pos[0]+1,pos[1])] = 2
+                self.workers[1].append((pos[0]+1,pos[1]))
             elif dir==2:
-                self.config[(pos[0]+1,pos[1]-1)] = 2
+                if self.config[(pos[0]+1,pos[1]-1)] = 1:
+                    self.remain[0] -= 1
+                    self.workers[0].remove((pos[0]+1,pos[1]-1))
+                self.config[(pos[0]+1,pos[1]-1)] 	= 2
+                self.workers[1].append((pos[0]+1,pos[1]-1))
+            self.workers[1].remove(pos)
         self.config[pos] = 0
 
+    # Heuristics
     def dh1(self,color):
         return 2*self.remain[color-1] + random.random()
-
     def oh1(self,color):
         return 2*(30-self.remain[2-color]) + random.random()
 
-class Player:
-    def __init__(self,color):
-        # Parameters: color = {1,2} = {white, black}, workers
-        self.color = color
-        self.workers = []
-        if color == 1:
-            for i in range(8):
-                self.workers.append((6,i))
-                self.workers.append((7,i))
-        elif color == 2:
-            for i in range(8):
-                self.workers.append((0,i))
-                self.workers.append((1,i))
+    # Search Strategies
+    def minmax(self,depth,color):
+    	if depth==0 or self.hasfinished():
+    		return self.oh1(color)
+    	if color==0:   # White
+            strategy = ((-1,-1),-1)
+    		value = float('-inf')
+    		for w in self.workers[color-1]:
+                for dir in range(3):
+                    if board.canMove(w,dir):
+                        newboard = copy.deepcopy(board)
+                        newboard.move(w,dir)
+            			curval=minmax(depth-1,newboard,color,False)
+            			if value < curval:
+                            value = 	curval
+                            strategy = (w,dir)
+    		return strategy
+    	else:  # Black
+            strategy = ((-1,-1),-1)
+    		value=float('inf')
+    		for w in self.workers[2-color]:
+                for dir in range(3):
+                    if board.canMove(w,dir):
+                        newboard = copy.deepcopy(board)
+                        newboard.move(w,dir)
+            			curval=minmax(depth-1,newboard,True)
+            			if value > curval:
+                            value = curval
+                            strategy = (w,dir)
+    		return strategy
 
-    def dh1(self,board):
-        return board.dh1(color)
-    def oh1(self,board):
-        return board.oh1(color)
+    def abpruning(self,depth,board,a,b,Max):    #a=neginf b=posinf
+    	if depth==0 or board.hasfinished():
+    		return board.oh1(self.color)
+    	if Max:
+    		for w in node.child:
+    			curval=abpruning(child,depth-1,a,b,False)
+    			a=max(a,curval)
+    			if a >= b:
+    				break
+    		return a
+    	else:
+    		for child in node.child:
+    			curval=abpruning(child,depth-1,a,b,True)
+    			b=min(b,curval)
+    			if a >= b:
+    				break
+    		return b
+
+
+
+
+
+
 
 b = Board()
 print(b.dh1(1))
