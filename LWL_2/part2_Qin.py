@@ -64,7 +64,7 @@ class Board:
                 if config[(pos[0]-1,pos[1])]==0:
                     return 1
                 elif config[(pos[0]-1,pos[1])]==2:
-                    return -1
+                    return 2
             elif dir==2 and pos[0]>0 and pos[1]<7:
                 if config[(pos[0]-1,pos[1]+1)]==0:
                     return 1
@@ -74,17 +74,17 @@ class Board:
             if dir==0 and pos[0]<7 and pos[1]<7:
                 if config[(pos[0]+1,pos[1]+1)]==0:
                     return 1
-                elif config[(pos[0]+1,pos[1]+1)]==2:
+                elif config[(pos[0]+1,pos[1]+1)]==1:
                     return 2
             elif dir==1 and pos[0]<7:
                 if config[(pos[0]+1,pos[1])]==0:
                     return 1
-                elif config[(pos[0]+1,pos[1])]==2:
-                    return -1
+                elif config[(pos[0]+1,pos[1])]==1:
+                    return 2
             elif dir==2 and pos[0]<7 and pos[1]>0:
                 if config[(pos[0]+1,pos[1]-1)]==0:
                     return 1
-                elif config[(pos[0]+1,pos[1]-1)]==2:
+                elif config[(pos[0]+1,pos[1]-1)]==1:
                     return 2
         return 0
 
@@ -133,15 +133,15 @@ class Board:
 
     # Heuristics
     def dh1(self,color):
-        return 2*self.remain[1-color] + random.random()
+        return 2*self.remain[color-1] + random.random()
     def oh1(self,color):
-        return 2*(30-self.remain[1-color]) + random.random()
+        return 2*(30-self.remain[2-color]) + random.random()
 
 # Search Strategies
 def minmax(board,depth,color,Max=True):
     if depth==0 or board.hasfinished():
-        return (board.oh1(color),())
-    if color==0:
+        return (board.dh1(color),())
+    if Max:
       strategy = ((-1,-1),-1) #White
       value = float('-inf')
       for w in board.workers[color-1]:
@@ -151,7 +151,6 @@ def minmax(board,depth,color,Max=True):
             newboard.move(w,dir)
             temp=minmax(newboard,depth-1,color,False)
             curval=temp[0]
-            strategy= temp[1]
             if value < curval:
               value = curval
               strategy = (w,dir)
@@ -165,7 +164,6 @@ def minmax(board,depth,color,Max=True):
             newboard.move(w,dir)
             temp=minmax(newboard,depth-1,color,True)
             curval=temp[0]
-            strategy=temp[1]
             if value > curval:
               value = curval
               strategy = (w,dir)
@@ -175,8 +173,8 @@ def minmax(board,depth,color,Max=True):
 # Search Strategies
 def minmax2(board,depth,color,Max=True):
     if depth==0 or board.hasfinished():
-        return board.oh1(color)
-    if color==0:
+        return (board.oh1(color),())
+    if Max:
       strategy = ((-1,-1),-1) #White
       value = float('-inf')
       for w in board.workers[color-1]:
@@ -186,7 +184,7 @@ def minmax2(board,depth,color,Max=True):
             newboard.move(w,dir)
             temp=minmax2(newboard,depth-1,color,False)
             curval=temp[0]
-            strategy= temp[1]
+            
             if value < curval:
               value = curval
               strategy = (w,dir)
@@ -200,7 +198,7 @@ def minmax2(board,depth,color,Max=True):
             newboard.move(w,dir)
             temp=minmax2(newboard,depth-1,color,True)
             curval=temp[0]
-            strategy=temp[1]
+            
             if value > curval:
               value = curval
               strategy = (w,dir)
@@ -227,11 +225,18 @@ def abpruning(self,depth,board,a,b,Max):    #a=neginf b=posinf
 
 def play(board):
     while 1:
-        s=minmax(board,3,0)
+        s=minmax(board,3,2)[1]
         board.printboard()
         board.move(s[0],s[1])
-        s=minmax2(board,3,1)
+        if board.hasfinished()== 2:
+            print("black wins")
+            break
+        s=minmax2(board,3,1)[1]
+        board.printboard()
         board.move(s[0],s[1])
+        if board.hasfinished()== 1:
+            print("white wins")
+            break
     board.printboard()
 
 
