@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import copy
+import time
 
 class Board:
     def __init__(self):
@@ -234,11 +235,17 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
+      # Construct Search table
+      searchlist = []
+      for w in board.workers[color-1]:
+          for dir in range(3):
+              searchlist.append((w,dir))
       # Search refutable table first
       for strat in reftab:
           w = strat[0]
           dir = strat[1]
           if w in board.workers[0] and board.canMove(w,dir):
+              searchlist.remove(strat)
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
               temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
@@ -249,29 +256,10 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
               if a >= b:
                   return (a,strategy)
       # Regular search
-      for w in board.workers[color-1]:
-          for dir in range(3):
-              if board.canMove(w,dir)>0:
-                  newboard = copy.deepcopy(board)
-                  newboard.move(w,dir)
-                  temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
-                  curval=temp[0]
-                  if a < curval:
-                      a = curval
-                      strategy = (w,dir)
-                  if a >= b:
-                      # Record into refutable table for future reference
-                      reftab.append(strategy)
-                      return (a,strategy)
-      return (a,strategy)
-    else:
-      # Want smaller in front
-      strategy = ((-1,-1),-1)
-      # Refutable table first
-      for strat in reftab:
+      for strat in searchlist:
           w = strat[0]
           dir = strat[1]
-          if w in board.workers[1] and board.canMove(w,dir):
+          if board.canMove(w,dir)>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
               temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
@@ -280,27 +268,58 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
                   a = curval
                   strategy = (w,dir)
               if a >= b:
+                  # Record into refutable table for future reference
+                  reftab.append(strategy)
+                  #print(len(reftab))
                   return (a,strategy)
-      # Regular
+      return (a,strategy)
+    else:
+      # Want smaller in front
+      strategy = ((-1,-1),-1)
+      # Construct Search table
+      searchlist = []
       for w in board.workers[2-color]:
           for dir in range(3):
-              if board.canMove(w,dir)>0:
-                  newboard = copy.deepcopy(board)
-                  newboard.move(w,dir)
-                  temp=alphabeta(newboard,depth-1,color,a,b,rt,True)
-                  curval=temp[0]
-                  if b > curval:
-                      b = curval
-                      strategy = (w,dir)
-                  if a >= b:
-                      reftab.append(strategy)
-                      return (b,strategy)
+              searchlist.append((w,dir))
+      # Refutable table first
+      for strat in reftab:
+          w = strat[0]
+          dir = strat[1]
+          if w in board.workers[1] and board.canMove(w,dir):
+              searchlist.remove(strat)
+              newboard = copy.deepcopy(board)
+              newboard.move(w,dir)
+              temp=alphabeta(newboard,depth-1,color,a,b,rt,True)
+              curval=temp[0]
+              if b > curval:
+                  b = curval
+                  strategy = (w,dir)
+              if a >= b:
+                  return (b,strategy)
+      # Regular
+      for strat in searchlist:
+          w = strat[0]
+          dir = strat[1]
+          if board.canMove(w,dir)>0:
+              newboard = copy.deepcopy(board)
+              newboard.move(w,dir)
+              temp=alphabeta(newboard,depth-1,color,a,b,rt,True)
+              curval=temp[0]
+              if b > curval:
+                  b = curval
+                  strategy = (w,dir)
+              if a >= b:
+                  reftab.append(strategy)
+                  #print(len(reftab))
+                  return (b,strategy)
       return (b,strategy)
 
 
 def play(board):
     while True:
+        start = time.time()
         s=alphabeta(board,5,1,float('-inf'),float('inf'),[])[1]
+        print(time.time()-start)
         board.printboard()
         board.move(s[0],s[1])
         if board.hasfinished() == 1:
