@@ -163,7 +163,7 @@ class Board:
 
 # Search Strategies
 def minmax(board,depth,color,Max=True):
-    if depth==0 or board.hasfinished():
+    if depth==0 or board.hasfinished()>0:
         return (board.dh1(color),((-1,-1),-1))
     if Max:
       strategy = ((-1,-1),-1)
@@ -196,8 +196,8 @@ def minmax(board,depth,color,Max=True):
 
 # Search Strategies
 def minmax2(board,depth,color,Max=True):
-    if depth==0 or board.hasfinished():
-        return (board.oh1(color),())
+    if depth==0 or board.hasfinished()>0:
+        return (board.oh1(color),((-1,-1),-1))
     if Max:
       strategy = ((-1,-1),-1) #White
       value = float('-inf')
@@ -227,27 +227,80 @@ def minmax2(board,depth,color,Max=True):
     return (value,strategy)
 
 
-def abpruning(self,depth,board,a,b,Max):    #a=neginf b=posinf
-	if depth==0 or board.hasfinished():
-		return board.oh1(self.color)
-	if Max:
-		for w in node.child:
-			curval=abpruning(child,depth-1,a,b,False)
-			a=max(a,curval)
-			if a >= b:
-				break
-		return a
-	else:
-		for child in node.child:
-			curval=abpruning(child,depth-1,a,b,True)
-			b=min(b,curval)
-			if a >= b:
-				break
-		return b
+def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b=posinf
+    if depth==0 or board.hasfinished()>0:
+        return (board.oh1(color),((-1,-1),-1))
+    rt = []
+    if Max:
+      # Want larger in front
+      strategy = ((-1,-1),-1)
+      # Search refutable table first
+      for strat in reftab:
+          w = strat[0]
+          dir = strat[1]
+          if w in board.workers[0] and board.canMove(w,dir):
+              newboard = copy.deepcopy(board)
+              newboard.move(w,dir)
+              temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
+              curval=temp[0]
+              if a < curval:
+                  a = curval
+                  strategy = (w,dir)
+              if a >= b:
+                  return (a,strategy)
+      # Regular search
+      for w in board.workers[color-1]:
+          for dir in range(3):
+              if board.canMove(w,dir)>0:
+                  newboard = copy.deepcopy(board)
+                  newboard.move(w,dir)
+                  temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
+                  curval=temp[0]
+                  if a < curval:
+                      a = curval
+                      strategy = (w,dir)
+                  if a >= b:
+                      # Record into refutable table for future reference
+                      reftab.append(strategy)
+                      return (a,strategy)
+      return (a,strategy)
+    else:
+      # Want smaller in front
+      strategy = ((-1,-1),-1)
+      # Refutable table first
+      for strat in reftab:
+          w = strat[0]
+          dir = strat[1]
+          if w in board.workers[1] and board.canMove(w,dir):
+              newboard = copy.deepcopy(board)
+              newboard.move(w,dir)
+              temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
+              curval=temp[0]
+              if a < curval:
+                  a = curval
+                  strategy = (w,dir)
+              if a >= b:
+                  return (a,strategy)
+      # Regular
+      for w in board.workers[2-color]:
+          for dir in range(3):
+              if board.canMove(w,dir)>0:
+                  newboard = copy.deepcopy(board)
+                  newboard.move(w,dir)
+                  temp=alphabeta(newboard,depth-1,color,a,b,rt,True)
+                  curval=temp[0]
+                  if b > curval:
+                      b = curval
+                      strategy = (w,dir)
+                  if a >= b:
+                      reftab.append(strategy)
+                      return (b,strategy)
+      return (b,strategy)
+
 
 def play(board):
     while True:
-        s=minmax(board,3,1)[1]
+        s=alphabeta(board,5,1,float('-inf'),float('inf'),[])[1]
         board.printboard()
         board.move(s[0],s[1])
         if board.hasfinished() == 1:
@@ -256,7 +309,7 @@ def play(board):
             print()
             break
         board.printboard()
-        s=minmax(board,3,2)[1]
+        s=minmax2(board,3,2)[1]
         board.printboard()
         board.move(s[0],s[1])
         if board.hasfinished()== 2:
