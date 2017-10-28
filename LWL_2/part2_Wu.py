@@ -382,7 +382,16 @@ def captrue(color, board, pos, dir)
         print('empty position!!!')
         return -1
     return ret
-   
+
+def distance(color,w):
+    if color==1:
+        return w[0]
+    elif color==2:
+        return 7-w[0]
+    else:
+        print('empty position!!!!')
+        return -1
+
 def abreast(s,color,w):
     #print('position:',w)
     #print('color:',color)
