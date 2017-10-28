@@ -190,7 +190,7 @@ class Board:
         cap=self.captrue(color,wh,dirh)
         dis=self.distance(color,wh)
         #print('position:',wh,' ret:',ret,' cap:',cap)
-        return 4*cap+dis
+        return 4*cap+4*dis
     # Helpers for Heuristics
     def abreast(self,color,pos,dir):
         #print('position:',w)
@@ -330,11 +330,7 @@ class Board:
 # Search Strategies
 def minmax(board,depth,color,wh,dirh,Max=True):
     if depth==0 or board.hasfinished()>0:
-        ret=abreast(board,color,wh,dirh)
-        cap=captrue(color, board, wh, dirh)
-        dis=distance(color,wh)
-        #print('position:',wh,' ret:',ret,' cap:',cap)
-        return (ret+4*cap+dis,((-1,-1),-1))
+        return (board.oh1(color),((-1,-1),-1))
     if Max:
       strategy = ((-1,-1),-1)
       value = float('-inf')
@@ -356,7 +352,7 @@ def minmax(board,depth,color,wh,dirh,Max=True):
               if board.canMove(w,dir)>0:
                   newboard = copy.deepcopy(board)
                   newboard.move(w,dir)
-                  temp=minmax(newboard,depth-1,color,w,True)
+                  temp=minmax(newboard,depth-1,color,w,dir,True)
                   curval=temp[0]
                   if value > curval:
                       value = curval
@@ -459,7 +455,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf
       for w in board.workers[color-1]:
           for dir in range(3):
               searchlist.append((w,dir))
-      # Regular search
+      # Regular Search
       for strat in searchlist:
           w = strat[0]
           dir = strat[1]
@@ -483,7 +479,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf
       for w in board.workers[2-color]:
           for dir in range(3):
               searchlist.append((w,dir))
-      # Regular
+      # Regular Search
       for strat in searchlist:
           w = strat[0]
           dir = strat[1]
@@ -503,7 +499,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf
 
 def play(board):
     while True:
-        s=alphabeta2(board,3,1,(),0,float('-inf'),float('inf'))[1]
+        s=minmax(board,3,1,(),0)[1]
         board.printboard()
         board.move(s[0],s[1])
         if board.hasfinished() == 1:
@@ -512,7 +508,7 @@ def play(board):
             print()
             break
         board.printboard()
-        s=alphabeta(board,5,2,(),0,float('-inf'),float('inf'))[1]
+        s=alphabeta(board,3,2,(),0,float('-inf'),float('inf'))[1]
         board.printboard()
         board.move(s[0],s[1])
         if board.hasfinished()== 2:
