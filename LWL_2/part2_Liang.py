@@ -227,6 +227,39 @@ def minmax2(board,depth,color,Max=True):
               strategy = (w,dir)
     return (value,strategy)
 
+def ab(board,depth,color,a,b,Max=True): 
+    if depth==0 or board.hasfinished()>0:
+        return (board.oh1(color),((-1,-1),-1))
+    if Max:
+      strategy = ((-1,-1),-1) #White
+      for w in board.workers[color-1]:
+        for dir in range(3):
+          if board.canMove(w,dir)>0:
+            newboard = copy.deepcopy(board)
+            newboard.move(w,dir)
+            temp=ab(newboard,depth-1,color,a,b,False)
+            curval=temp[0]
+            if a < curval:
+              a = curval
+              strategy = (w,dir)
+            if a >= b:
+              return (a,strategy)
+      return (a, strategy)
+    else:  # Black
+      strategy = ((-1,-1),-1)
+      for w in board.workers[2-color]:
+        for dir in range(3):
+          if board.canMove(w,dir)>0:
+            newboard = copy.deepcopy(board)
+            newboard.move(w,dir)
+            temp=ab(newboard,depth-1,color,a,b,True)
+            curval=temp[0]
+            if b > curval:
+                b = curval
+                strategy = (w,dir)
+            if a >= b:
+              return (b,strategy)
+      return (b,strategy)
 
 def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b=posinf
     if depth==0 or board.hasfinished()>0:
@@ -318,7 +351,8 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
 def play(board):
     while True:
         start = time.time()
-        s=alphabeta(board,5,1,float('-inf'),float('inf'),[])[1]
+        #s=alphabeta(board,5,1,float('-inf'),float('inf'),[])[1]
+        s=ab(board,5,1,float('-inf'),float('inf'))[1]
         print(time.time()-start)
         board.printboard()
         board.move(s[0],s[1])
