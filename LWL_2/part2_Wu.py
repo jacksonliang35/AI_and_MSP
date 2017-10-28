@@ -339,6 +339,50 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
                   #print(len(reftab))
                   return (b,strategy)
       return (b,strategy)
+#input: current position, color, board, moving direction
+def captrue(color, board, pos, dir)
+        # dir = {0,1,2} = {forward left, forward, forward right}
+    if color==1:
+        #white
+        if dir==0:#forward left
+            nextpos=(pos[0]-1,pos[1]-1)
+        elif dir==1:#forward 
+            nextpos=(pos[0]-1,pos[1])
+        elif dir==2:#forward right
+            nextpos=(pos[0]-1,pos[1]+1)
+        else:
+            print('error')
+            return -1
+        pos1=(nextpos[0]-1,nextpos[1]-1)
+        pos2=(nextpos[0]-1,nextpos[1]+1)
+        ret=0
+        if pos1 in workers[1]: 
+            ret=ret+1
+        if pos2 in workers[1]:
+            ret=ret+1
+    elif color==2:
+        #black
+        if dir==0:
+            nextpos=(pos[0]+1,pos[1]+1)
+        elif dir==1:#forward 
+            nextpos=(pos[0]+1,pos[1])
+        elif dir==2:#forward right
+            nextpos=(pos[0]+1,pos[1]-1)
+        else:
+            print('error')
+            return -1
+        pos1=(nextpos[0]+1,nextpos[1]+1)
+        pos2=(nextpos[0]+1,nextpos[1]-1)
+        ret=0
+        if pos1 in workers[0]: 
+            ret=ret+1
+        if pos2 in workers[0]:
+            ret=ret+1
+    else:
+        print('empty position!!!')
+        return -1
+    return ret
+   
 def abreast(s,color,w):
     #print('position:',w)
     #print('color:',color)
@@ -351,6 +395,7 @@ def abreast(s,color,w):
     if color==1:
         #white workers:
         white=[]
+
         for i in range(0,len(s.workers[0])):
             if s.workers[0][i][0]==x:
                 white.append(s.workers[0][i])
@@ -390,7 +435,7 @@ def abreast(s,color,w):
     else:
         print('empty position!!')
         return -1
-    return end+1-start
+    return end+1-start+max(left)
                 
 
 def abpruning(self,depth,board,a,b,Max):    #a=neginf b=posinf
