@@ -97,7 +97,7 @@ class Board:
             elif dir==2 and pos[0]>0 and pos[1]<7:
                 if config[(pos[0]-1,pos[1]+1)]==0:
                     return 1
-                elif config[(pos[0]-1,pos[1]-1)]==2:
+                elif config[(pos[0]-1,pos[1]+1)]==2:
                     return 2
         elif config[pos] == 2:
             if dir==0 and pos[0]<7 and pos[1]<7:
