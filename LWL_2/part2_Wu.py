@@ -187,10 +187,11 @@ class Board:
         return 2*(30-len(self.workers[2-color])) + random.random()
 
 # Search Strategies
-def minmax(board,depth,color,wh,Max=True):
+def minmax(board,depth,color,wh,dirh,Max=True):
     if depth==0 or board.hasfinished()>0:
-        ret=abreast(board,color,wh)
-        print('position:',wh,' ret:',ret)
+        ret=abreast(board,color,wh,dirh)
+        cap=captrue(color, board, wh, dirh)
+        print('position:',wh,' ret:',ret,' cap:',cap)
         return (ret,((-1,-1),-1))
     if Max:
       strategy = ((-1,-1),-1)
@@ -200,7 +201,7 @@ def minmax(board,depth,color,wh,Max=True):
               if board.canMove(w,dir)>0:
                   newboard = copy.deepcopy(board)
                   newboard.move(w,dir)
-                  temp=minmax(newboard,depth-1,color,w,False)
+                  temp=minmax(newboard,depth-1,color,w,dir,False)
                   curval=temp[0]
                   if value < curval:
                       value = curval
@@ -340,7 +341,7 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
                   return (b,strategy)
       return (b,strategy)
 #input: current position, color, board, moving direction
-def captrue(color, board, pos, dir)
+def captrue(color, board, pos, dir):
         # dir = {0,1,2} = {forward left, forward, forward right}
     if color==1:
         #white
@@ -353,13 +354,16 @@ def captrue(color, board, pos, dir)
         else:
             print('error')
             return -1
+
         pos1=(nextpos[0]-1,nextpos[1]-1)
         pos2=(nextpos[0]-1,nextpos[1]+1)
         ret=0
-        if pos1 in workers[1]: 
+        if pos1 in board.workers[1]: 
             ret=ret+1
-        if pos2 in workers[1]:
+        if pos2 in board.workers[1]:
             ret=ret+1
+
+        print('ret',ret,' pos:',pos,' dir',dir)
     elif color==2:
         #black
         if dir==0:
@@ -374,10 +378,11 @@ def captrue(color, board, pos, dir)
         pos1=(nextpos[0]+1,nextpos[1]+1)
         pos2=(nextpos[0]+1,nextpos[1]-1)
         ret=0
-        if pos1 in workers[0]: 
+        if pos1 in board.workers[0]: 
             ret=ret+1
-        if pos2 in workers[0]:
+        if pos2 in board.workers[0]:
             ret=ret+1
+        print('ret',ret,' pos:',pos,' dir',dir)
     else:
         print('empty position!!!')
         return -1
@@ -392,11 +397,36 @@ def distance(color,w):
         print('empty position!!!!')
         return -1
 
-def abreast(s,color,w):
+def abreast(s,color,pos,dir):
     #print('position:',w)
     #print('color:',color)
-    x=w[0]
-    y=w[1]
+    if color==1:
+        #white
+        if dir==0:#forward left
+            nextpos=(pos[0]-1,pos[1]-1)
+        elif dir==1:#forward 
+            nextpos=(pos[0]-1,pos[1])
+        elif dir==2:#forward right
+            nextpos=(pos[0]-1,pos[1]+1)
+        else:
+            print('error')
+            return -1
+    elif color==2:
+        #black
+        if dir==0:
+            nextpos=(pos[0]+1,pos[1]+1)
+        elif dir==1:#forward 
+            nextpos=(pos[0]+1,pos[1])
+        elif dir==2:#forward right
+            nextpos=(pos[0]+1,pos[1]-1)
+        else:
+            print('error')
+            return -1
+    else:
+        print('empty position!!')
+        return -1
+    x=nextpos[0]
+    y=nextpos[1]
     start=y
     end=y
     sflag=0
@@ -444,7 +474,7 @@ def abreast(s,color,w):
     else:
         print('empty position!!')
         return -1
-    return end+1-start+max(left)
+    return end+1-start
                 
 
 def abpruning(self,depth,board,a,b,Max):    #a=neginf b=posinf
@@ -466,8 +496,10 @@ def abpruning(self,depth,board,a,b,Max):    #a=neginf b=posinf
 		return b
 
 def play(board):
+    #minmax(board,depth,color,wh,dirh,Max=True): white
+    
     while True:
-        s=minmax(board,3,1,())[1]
+        s=minmax(board,3,1,(),0,)[1]
         board.printboard()
         board.move(s[0],s[1])
 
@@ -492,5 +524,6 @@ def play(board):
 
 b = Board()
 debugflag=0
+
 # b.readboard("error.txt")
-play(b)
+#play(b)
