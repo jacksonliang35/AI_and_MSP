@@ -191,8 +191,9 @@ def minmax(board,depth,color,wh,dirh,Max=True):
     if depth==0 or board.hasfinished()>0:
         ret=abreast(board,color,wh,dirh)
         cap=captrue(color, board, wh, dirh)
-        print('position:',wh,' ret:',ret,' cap:',cap)
-        return (ret,((-1,-1),-1))
+        dis=distance(color,wh)
+        #print('position:',wh,' ret:',ret,' cap:',cap)
+        return (ret+4*cap+dis,((-1,-1),-1))
     if Max:
       strategy = ((-1,-1),-1)
       value = float('-inf')
@@ -255,10 +256,9 @@ def minmax2(board,depth,color,Max=True):
     return (value,strategy)
 
 
-def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b=posinf
+def alphabeta(board,depth,color,a,b,Max=True):    # initialize a=neginf b=posinf
     if depth==0 or board.hasfinished()>0:
         return (board.oh1(color),((-1,-1),-1))
-    rt = []
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
@@ -267,21 +267,6 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
       for w in board.workers[color-1]:
           for dir in range(3):
               searchlist.append((w,dir))
-      # Search refutable table first
-      for strat in reftab:
-          w = strat[0]
-          dir = strat[1]
-          if w in board.workers[0] and board.canMove(w,dir):
-              searchlist.remove(strat)
-              newboard = copy.deepcopy(board)
-              newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
-              curval=temp[0]
-              if a < curval:
-                  a = curval
-                  strategy = (w,dir)
-              if a >= b:
-                  return (a,strategy)
       # Regular search
       for strat in searchlist:
           w = strat[0]
@@ -289,15 +274,13 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
           if board.canMove(w,dir)>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,a,b,rt,False)
+              temp=alphabeta(newboard,depth-1,color,a,b,False)
               curval=temp[0]
               if a < curval:
                   a = curval
                   strategy = (w,dir)
               if a >= b:
                   # Record into refutable table for future reference
-                  reftab.append(strategy)
-                  #print(len(reftab))
                   return (a,strategy)
       return (a,strategy)
     else:
@@ -308,21 +291,6 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
       for w in board.workers[2-color]:
           for dir in range(3):
               searchlist.append((w,dir))
-      # Refutable table first
-      for strat in reftab:
-          w = strat[0]
-          dir = strat[1]
-          if w in board.workers[1] and board.canMove(w,dir):
-              searchlist.remove(strat)
-              newboard = copy.deepcopy(board)
-              newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,a,b,rt,True)
-              curval=temp[0]
-              if b > curval:
-                  b = curval
-                  strategy = (w,dir)
-              if a >= b:
-                  return (b,strategy)
       # Regular
       for strat in searchlist:
           w = strat[0]
@@ -330,14 +298,12 @@ def alphabeta(board,depth,color,a,b,reftab,Max=True):    # initialize a=neginf b
           if board.canMove(w,dir)>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,a,b,rt,True)
+              temp=alphabeta(newboard,depth-1,color,a,b,True)
               curval=temp[0]
               if b > curval:
                   b = curval
                   strategy = (w,dir)
               if a >= b:
-                  reftab.append(strategy)
-                  #print(len(reftab))
                   return (b,strategy)
       return (b,strategy)
 #input: current position, color, board, moving direction
@@ -363,7 +329,7 @@ def captrue(color, board, pos, dir):
         if pos2 in board.workers[1]:
             ret=ret+1
 
-        print('ret',ret,' pos:',pos,' dir',dir)
+        #print('ret',ret,' pos:',pos,' dir',dir)
     elif color==2:
         #black
         if dir==0:
@@ -382,7 +348,7 @@ def captrue(color, board, pos, dir):
             ret=ret+1
         if pos2 in board.workers[0]:
             ret=ret+1
-        print('ret',ret,' pos:',pos,' dir',dir)
+        #print('ret',ret,' pos:',pos,' dir',dir)
     else:
         print('empty position!!!')
         return -1
@@ -477,29 +443,11 @@ def abreast(s,color,pos,dir):
     return end+1-start
                 
 
-def abpruning(self,depth,board,a,b,Max):    #a=neginf b=posinf
-	if depth==0 or board.hasfinished():
-		return board.oh1(self.color)
-	if Max:
-		for w in node.child:
-			curval=abpruning(child,depth-1,a,b,False)
-			a=max(a,curval)
-			if a >= b:
-				break
-		return a
-	else:
-		for child in node.child:
-			curval=abpruning(child,depth-1,a,b,True)
-			b=min(b,curval)
-			if a >= b:
-				break
-		return b
-
 def play(board):
     #minmax(board,depth,color,wh,dirh,Max=True): white
     
     while True:
-        s=minmax(board,3,1,(),0,)[1]
+        s=alphabeta(board,4,1,(),0)[1]
         board.printboard()
         board.move(s[0],s[1])
 
@@ -510,7 +458,7 @@ def play(board):
             print()
             break
         board.printboard()
-        s=minmax2(board,3,2)[1]
+        s=alphabeta(board,4,2)[1]
         board.printboard()
         board.move(s[0],s[1])
         if board.hasfinished()== 2:
@@ -526,4 +474,4 @@ b = Board()
 debugflag=0
 
 # b.readboard("error.txt")
-#play(b)
+play(b)
