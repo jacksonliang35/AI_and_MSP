@@ -190,7 +190,7 @@ class Board:
         cap=self.captrue(color,wh,dirh)
         dis=self.distance(color,wh)
         #print('position:',wh,' ret:',ret,' cap:',cap)
-        return 4*cap+4*dis
+        return 1*cap+0.1*dis**2+2*(30-len(self.workers[2-color]))
     # Helpers for Heuristics
     def abreast(self,color,pos,dir):
         #print('position:',w)
@@ -393,9 +393,9 @@ def minmax2(board,depth,color,Max=True):
     return (value,strategy)
 """
 
-def alphabeta(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf b=posinf
+def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=neginf b=posinf
     if depth==0 or board.hasfinished()>0:
-        return (board.oh2(color,wh,dirh),((-1,-1),-1))
+        return (board.oh2(color,wh,dirh)+canM,((-1,-1),-1),0)
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
@@ -408,10 +408,11 @@ def alphabeta(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf 
       for strat in searchlist:
           w = strat[0]
           dir = strat[1]
-          if board.canMove(w,dir)>0:
+          canmove=board.canMove(w,dir)
+          if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,False)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM+canmove,False)
               curval=temp[0]
               if a < curval:
                   a = curval
@@ -432,10 +433,11 @@ def alphabeta(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf 
       for strat in searchlist:
           w = strat[0]
           dir = strat[1]
-          if board.canMove(w,dir)>0:
+          canmove=board.canMove(w,dir)
+          if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,True)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM-canmove,True)
               curval=temp[0]
               if b > curval:
                   b = curval
