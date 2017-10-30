@@ -5,6 +5,7 @@ import queue
 import sys
 import copy
 import time
+import random
 from collections import deque
 class flowfree:
 	#We use a structure to record the basic information of graph which include the color position, width, height
@@ -17,6 +18,7 @@ class flowfree:
 		self.pos2color=dict()
 		self.boundary = np.zeros((0,0))
 		self.count = 0
+		self.expansion = 0
 		return
 
 	#Input : graph, txt file containing maze
@@ -332,23 +334,25 @@ class flowfree:
 		color=self.colors[temp[0]]
 		Search_result=[]
 		for i in range(4*self.width):
-			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
-			for path in Search_result:
-                #change graph,boundary,colors
-				tempg=copy.deepcopy(self.graph)
-				tempb=copy.deepcopy(self.boundary)
-				tempc=copy.deepcopy(self.colors)
-				self.change_boundary(path)
-				self.change_graph(path,color)
-				self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
-				if self.is_complete():
-					return True
-				result = self.backtracking_h_dumb()
-				if result != False:
-					return result
-				self.graph=tempg #restore graph,boundary,colors
-				self.boundary=tempb
-				self.colors=tempc
+			Search_result += self.Search(color,i)# search for the paths with constant cost return a list according to priority
+		random.shuffle(Search_result)
+		for path in Search_result:
+			self.expansion += 1
+            #change graph,boundary,colors
+			tempg=copy.deepcopy(self.graph)
+			tempb=copy.deepcopy(self.boundary)
+			tempc=copy.deepcopy(self.colors)
+			self.change_boundary(path)
+			self.change_graph(path,color)
+			self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
+			if self.is_complete():
+				return True
+			result = self.backtracking_h_dumb()
+			if result != False:
+				return result
+			self.graph=tempg #restore graph,boundary,colors
+			self.boundary=tempb
+			self.colors=tempc
 		return False
 
 
@@ -368,6 +372,7 @@ class flowfree:
 					print('--------------------')
 				"""
 				for path in Search_result:
+					self.expansion += 1
 	                #change graph,boundary,colors
 					tempg=copy.deepcopy(self.graph)
 					tempb=copy.deepcopy(self.boundary)
@@ -396,6 +401,7 @@ class flowfree:
 				print('--------------------')
 			"""
 			for path in Search_result:
+				self.expansion += 1
                 #change graph,boundary,colors
 				tempg=copy.deepcopy(self.graph)
 				tempb=copy.deepcopy(self.boundary)
@@ -475,7 +481,7 @@ class flowfree:
 
 
 a=flowfree()
-a.readgraph('input10101.txt')
+a.readgraph('input991.txt')
 a.printgraph()
 a.findcolors()
 a.printgraph()
@@ -483,3 +489,4 @@ start = time.time()
 a.backtracking_smart()
 end = time.time()
 print(end - start)
+print(a.expansion)
