@@ -3,8 +3,13 @@ import random
 import copy
 import time
 current_pos=(0,0)
-whiteexpand = 0
-blackexpand = 0
+whitestep = 0
+blackstep = 0
+class count:
+    def __init__(self):
+        self.count = 0
+    def inc(self):
+        self.count += 1
 class Board:
     def __init__(self):
         # Parameters:config, white, black
@@ -420,9 +425,10 @@ def minmax2(board,depth,color,Max=True):
     return (value,strategy)
 """
 
-def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=neginf b=posinf
-    global blackexpand
-    blackexpand += 1
+def alphabeta(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize a=neginf b=posinf
+    global blackstep
+    blackstep += 1
+    c.inc()
     if depth==0 or board.hasfinished()>0:
         #==================
         global current_pos
@@ -446,7 +452,7 @@ def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM+canmove,False)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM+canmove,False)
               curval=temp[0]
               if a < curval:
                   a = curval
@@ -472,7 +478,7 @@ def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM-canmove,True)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM-canmove,True)
               curval=temp[0]
               if b > curval:
                   b = curval
@@ -481,9 +487,10 @@ def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=
                   return (b,strategy)
       return (b,strategy)
 
-def alphabeta2(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=neginf b=posinf
-    global whiteexpand
-    whiteexpand += 1
+def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize a=neginf b=posinf
+    global whitestep
+    whitestep += 1
+    c.inc()
     if depth==0 or board.hasfinished()>0:
         #==================
         global current_pos
@@ -507,7 +514,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM+canmove,False)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM+canmove,False)
               curval=temp[0]
               if a < curval:
                   a = curval
@@ -533,7 +540,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM-canmove,True)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM-canmove,True)
               curval=temp[0]
               if b > curval:
                   b = curval
@@ -543,19 +550,19 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a
       return (b,strategy)
 
 def play(board):
+    whiteexp = count()
+    blackexp = count()
     while True:
-        s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'))[1]
+        s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
         board.printboard()
         board.move(s[0],s[1])
-        print(whiteexpand)
         if board.hasfinished() == 1:
             board.printboard()
             print("white wins")
             print()
             break
-        board.printboard()
-        s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'))[1]
 
+        s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
         board.printboard()
         board.move(s[0],s[1])
 
@@ -564,8 +571,15 @@ def play(board):
             print("black wins")
             print()
             break
-        board.printboard()
-
+    print('White Total Nodes Expanded: ',end='')
+    print(whiteexp.count)
+    print('White Total Steps:',end='')
+    print(whitestep)
+    print('Black Total Nodes Expanded: ',end='')
+    print(blackexp.count)
+    print('Black Total Steps:',end='')
+    print(blackstep)
+    print()
 
 
 b = Board()
