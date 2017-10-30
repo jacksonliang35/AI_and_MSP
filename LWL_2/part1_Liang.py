@@ -361,6 +361,7 @@ class flowfree:
 		colorlist = self.next_variable() # choose which variable to assign
 		Search_result=[]
 		cutoff = 6
+		upperbound = self.width ** 2 // 2
 		for p in colorlist:
 			for i in range(cutoff):
 				color = p[1]
@@ -392,7 +393,7 @@ class flowfree:
 
 
 		color = colorlist[0][1]
-		for i in range(cutoff,4*self.width):
+		for i in range(cutoff,upperbound):
 			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
 			"""
 			if color=='O':

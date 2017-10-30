@@ -3,6 +3,8 @@ import random
 import copy
 import time
 current_pos=(0,0)
+whiteexpand = 0
+blackexpand = 0
 class Board:
     def __init__(self):
         # Parameters:config, white, black
@@ -149,6 +151,7 @@ class Board:
                 #==================================
                 self.config[(pos[0]-1,pos[1]+1)] = 1
             self.workers[0].remove(pos)
+            self.config[pos] = 0
 
         elif self.config[pos] == 2:
             if dir==0:
@@ -177,7 +180,9 @@ class Board:
                 #print(ret)
                 #==================================
             self.workers[1].remove(pos)
-        self.config[pos] = 0
+            self.config[pos] = 0
+        else:
+            print('Does not move!!!')
         return
 
     # Heuristics
@@ -198,14 +203,14 @@ class Board:
         cap=self.captrue(color,wh,dirh)
         dis=self.distance(color,wh)
         #print('position:',wh,' ret:',ret,' cap:',cap)
-        return 1*cap+0.1*dis**2+2*(30-len(self.workers[2-color]))
+        return 1*cap+0.1*dis**2+2*(len(self.workers[color-1]))
     # Helpers for Heuristics
     def laststep(self,color):
         if color==1 and current_pos[0]==1:
           return 10
         elif color==2 and current_pos[0]==6:
           return 10
-        else: 
+        else:
           return 0
     def abreast(self,color,pos,dir):
         #print('position:',w)
@@ -416,12 +421,14 @@ def minmax2(board,depth,color,Max=True):
 """
 
 def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=neginf b=posinf
+    global blackexpand
+    blackexpand += 1
     if depth==0 or board.hasfinished()>0:
         #==================
         global current_pos
         current_pos=wh
         #==================
-        return (board.dh2(color,wh,dirh)+canM,((-1,-1),-1),0)
+        return (board.oh2(color,wh,dirh)+canM,((-1,-1),-1),0)
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
@@ -430,6 +437,7 @@ def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=
       for w in board.workers[color-1]:
           for dir in range(3):
               searchlist.append((w,dir))
+      random.shuffle(searchlist)
       # Regular search
       for strat in searchlist:
           w = strat[0]
@@ -455,6 +463,7 @@ def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=
       for w in board.workers[2-color]:
           for dir in range(3):
               searchlist.append((w,dir))
+      random.shuffle(searchlist)
       # Regular
       for strat in searchlist:
           w = strat[0]
@@ -472,9 +481,15 @@ def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=
                   return (b,strategy)
       return (b,strategy)
 
-def alphabeta2(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf b=posinf
+def alphabeta2(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=neginf b=posinf
+    global whiteexpand
+    whiteexpand += 1
     if depth==0 or board.hasfinished()>0:
-        return (board.dh1(color),((-1,-1),-1))
+        #==================
+        global current_pos
+        current_pos=wh
+        #==================
+        return (board.dh1(color),((-1,-1),-1),0)
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
@@ -483,14 +498,16 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf
       for w in board.workers[color-1]:
           for dir in range(3):
               searchlist.append((w,dir))
-      # Regular Search
+      random.shuffle(searchlist)
+      # Regular search
       for strat in searchlist:
           w = strat[0]
           dir = strat[1]
-          if board.canMove(w,dir)>0:
+          canmove=board.canMove(w,dir)
+          if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,False)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM+canmove,False)
               curval=temp[0]
               if a < curval:
                   a = curval
@@ -507,14 +524,16 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf
       for w in board.workers[2-color]:
           for dir in range(3):
               searchlist.append((w,dir))
-      # Regular Search
+      random.shuffle(searchlist)
+      # Regular
       for strat in searchlist:
           w = strat[0]
           dir = strat[1]
-          if board.canMove(w,dir)>0:
+          canmove=board.canMove(w,dir)
+          if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,True)
+              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,canM-canmove,True)
               curval=temp[0]
               if b > curval:
                   b = curval
@@ -523,13 +542,12 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,Max=True):    # initialize a=neginf
                   return (b,strategy)
       return (b,strategy)
 
-
-
 def play(board):
     while True:
-        s=minmax(board,3,1,(),0)[1]
+        s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'))[1]
         board.printboard()
         board.move(s[0],s[1])
+        print(whiteexpand)
         if board.hasfinished() == 1:
             board.printboard()
             print("white wins")
