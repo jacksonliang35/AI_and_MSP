@@ -204,12 +204,15 @@ class flowfree:
 			path1 = state[2]
 			explored = state[3]
 			notconnect = True
+			'''
 			boundcopy = copy.deepcopy(self.boundary)
+
 			self.change_boundary2(boundcopy,path1)
 			for i in range(self.height):
 				for j in range(self.width):
 					if self.has_empty_set(boundcopy,i,j):
 						continue
+			'''
 			for c in self.colors:
 				if not self.isconnected(self.color2pos[c][0],self.color2pos[c][1],path1,color):
 					notconnect=True
@@ -412,7 +415,7 @@ class flowfree:
 	def backtracking_h_smart(self):
 		colorlist = self.next_variable() # choose which variable to assign
 		Search_result=[]
-		cutoff = 5
+		cutoff =self.width
 		for p in colorlist:
 			for i in range(cutoff):
 				color = p[1]
@@ -505,13 +508,13 @@ class flowfree:
 				return True
 		'''
 		# Check empty set
-		'''
+		
 		boundcopy = copy.deepcopy(self.boundary)
 		for i in range(self.height):
 			for j in range(self.width):
 				if self.has_empty_set(boundcopy,i,j):
 					return True
-		'''
+		
 		return False
 
 
