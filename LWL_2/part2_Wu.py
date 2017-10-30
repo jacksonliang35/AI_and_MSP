@@ -193,6 +193,12 @@ class Board:
         #print('position:',wh,' ret:',ret,' cap:',cap)
         #return 1*cap+0.1*dis**2+2*(30-len(self.workers[2-color]))
         return 3*cur+0.3*ret+3*cap+0.1*0.7*(7-dis)**2+1*(30-len(self.workers[2-color]))
+    def dh2(self,color,wh,dirh):
+        ret=self.abreast(color,wh,dirh)
+        cap=self.captrue(color,wh,dirh)
+        dis=self.distance(color,wh)
+        #print('position:',wh,' ret:',ret,' cap:',cap)
+        return 1*cap+0.1*dis**2+2*(30-len(self.workers[2-color]))
     # Helpers for Heuristics
     def laststep(self,color):
         if color==1 and current_pos[0]==1:
@@ -346,7 +352,7 @@ class Board:
 # Search Strategies
 def minmax(board,depth,color,wh,dirh,Max=True):
     if depth==0 or board.hasfinished()>0:
-        return (board.dh1(color),((-1,-1),-1))
+        return (board.oh1(color),((-1,-1),-1))
     if Max:
       strategy = ((-1,-1),-1)
       value = float('-inf')
@@ -415,7 +421,7 @@ def alphabeta(board,depth,color,wh,dirh,a,b,canM=0,Max=True):    # initialize a=
         global current_pos
         current_pos=wh
         #==================
-        return (board.oh2(color,wh,dirh)+canM,((-1,-1),-1),0)
+        return (board.dh2(color,wh,dirh)+canM,((-1,-1),-1),0)
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
