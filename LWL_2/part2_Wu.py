@@ -192,7 +192,7 @@ class Board:
         dis=self.distance(color,wh)
         #print('position:',wh,' ret:',ret,' cap:',cap)
         #return 1*cap+0.1*dis**2+2*(30-len(self.workers[2-color]))
-        return 3*cur+0.3*ret+2*cap+0.1*(7-dis)**2+1*(30-len(self.workers[2-color]))
+        return 3*cur+0.3*ret+3*cap+0.1*0.7*(7-dis)**2+1*(30-len(self.workers[2-color]))
     # Helpers for Heuristics
     def laststep(self,color):
         if color==1 and current_pos[0]==1:
@@ -530,7 +530,7 @@ def play(board):
             print()
             break
         board.printboard()
-        s=alphabeta(board,3,2,(),0,float('-inf'),float('inf'))[1]
+        s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'))[1]
 
         board.printboard()
         board.move(s[0],s[1])
