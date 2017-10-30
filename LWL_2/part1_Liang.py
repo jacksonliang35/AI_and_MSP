@@ -16,6 +16,7 @@ class flowfree:
 		self.color2pos=dict()
 		self.pos2color=dict()
 		self.boundary = np.zeros((0,0))
+		self.count = 0
 		return
 
 	#Input : graph, txt file containing maze
@@ -313,15 +314,16 @@ class flowfree:
 					self.boundary[x,y] = 0 # not a boundary if a path is applied
 		"""
 
-
 	def change_graph(self,path,color):
 		for i in path:
 			self.graph[i[0]][i[1]] = color
 		#print graph
 
-		for line in self.graph:
-			print(''.join(line))
-		print()
+		self.count += 1
+		if self.count % 100 == 0:
+			for line in self.graph:
+				print(''.join(line))
+			print()
 
 
 	def backtracking_h_dumb(self):
@@ -353,10 +355,39 @@ class flowfree:
 
 	def backtracking_h_smart(self):
 		colorlist = self.next_variable() # choose which variable to assign
-		print(colorlist)
-		color = colorlist[0][1]
 		Search_result=[]
-		for i in range(4*self.width):
+		cutoff = 6
+		for p in colorlist:
+			for i in range(cutoff):
+				color = p[1]
+				Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
+				"""
+				if color=='O':
+					print(i)
+					print(Search_result)
+					print('--------------------')
+				"""
+				for path in Search_result:
+	                #change graph,boundary,colors
+					tempg=copy.deepcopy(self.graph)
+					tempb=copy.deepcopy(self.boundary)
+					tempc=copy.deepcopy(self.colors)
+					self.change_boundary(path)
+					self.change_graph(path,color)
+					self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
+					if self.is_complete():
+						return True
+					if not self.will_fail():
+						result = self.backtracking_h_smart()
+						if result != False:
+							return result
+					self.graph=tempg #restore graph,boundary,colors
+					self.boundary=tempb
+					self.colors=tempc
+
+
+		color = colorlist[0][1]
+		for i in range(cutoff,4*self.width):
 			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
 			"""
 			if color=='O':
@@ -443,9 +474,8 @@ class flowfree:
 		return no_color
 
 
-
 a=flowfree()
-a.readgraph('input77.txt')
+a.readgraph('input10101.txt')
 a.printgraph()
 a.findcolors()
 a.printgraph()
