@@ -395,7 +395,13 @@ class flowfree:
 		op = dict()
 		for c in colors:
 			if c in self.colors:
-				op[c] = len(self.var_constrain(colors[c][0]))*len(self.var_constrain(colors[c][1]))
+				#op[c] = len(self.var_constrain(colors[c][0]))*len(self.var_constrain(colors[c][1]))
+				a=len(self.Search(c,0))
+				if a ==0:
+					op[c] = len(self.var_constrain(colors[c][0]))*len(self.var_constrain(colors[c][1]))
+				else:
+					op[c]=a
+
 		return min(op, key=op.get)
 
 	def will_fail(self):
@@ -443,7 +449,7 @@ class flowfree:
 
 
 a=flowfree()
-a.readgraph('input10101.txt')
+a.readgraph('input991.txt')
 a.printgraph()
 a.findcolors()
 a.printgraph()
