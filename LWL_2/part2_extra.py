@@ -504,7 +504,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize
         global current_pos
         current_pos=wh
         #==================
-        return (board.dh1(color),((-1,-1),-1),0)
+        return (board.oh1(color),((-1,-1),-1),0)
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
@@ -562,7 +562,8 @@ def play(board):
     blackexp = count()
     while True:
         start = time.time()
-        s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
+        s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
+        #s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
         end = time.time()
         whiteexp.tinc(start,end)
         whiteexp.sinc()
@@ -575,7 +576,8 @@ def play(board):
             break
 
         start = time.time()
-        s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
+        s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
+        #s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
         end = time.time()
         blackexp.tinc(start,end)
         blackexp.sinc()

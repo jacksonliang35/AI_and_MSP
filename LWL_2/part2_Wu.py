@@ -358,7 +358,7 @@ class Board:
         else:
           print('empty position!!!!')
           return -1
-        if ret==7:
+        if ret==6:
           return 40
         else:
           return ret
@@ -366,7 +366,8 @@ class Board:
 
 
 # Search Strategies
-def minmax(board,depth,color,wh,dirh,Max=True):
+def minmax(board,depth,color,wh,dirh,c,Max=True):
+    c.inc()
     if depth==0 or board.hasfinished()>0:
         return (board.oh1(color),((-1,-1),-1))
     if Max:
@@ -377,7 +378,7 @@ def minmax(board,depth,color,wh,dirh,Max=True):
               if board.canMove(w,dir)>0:
                   newboard = copy.deepcopy(board)
                   newboard.move(w,dir)
-                  temp=minmax(newboard,depth-1,color,w,dir,False)
+                  temp=minmax(newboard,depth-1,color,w,dir,c,False)
                   curval=temp[0]
                   if value < curval:
                       value = curval
@@ -390,7 +391,7 @@ def minmax(board,depth,color,wh,dirh,Max=True):
               if board.canMove(w,dir)>0:
                   newboard = copy.deepcopy(board)
                   newboard.move(w,dir)
-                  temp=minmax(newboard,depth-1,color,w,dir,True)
+                  temp=minmax(newboard,depth-1,color,w,dir,c,True)
                   curval=temp[0]
                   if value > curval:
                       value = curval
@@ -498,7 +499,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize
         global current_pos
         current_pos=wh
         #==================
-        return (board.dh1(color),((-1,-1),-1),0)
+        return (board.oh1(color),((-1,-1),-1),0)
     if Max:
       # Want larger in front
       strategy = ((-1,-1),-1)
@@ -516,7 +517,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM+canmove,False)
+              temp=alphabeta2(newboard,depth-1,color,w,dir,a,b,c,canM+canmove,False)
               curval=temp[0]
               if a < curval:
                   a = curval
@@ -542,7 +543,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM-canmove,True)
+              temp=alphabeta2(newboard,depth-1,color,w,dir,a,b,c,canM-canmove,True)
               curval=temp[0]
               if b > curval:
                   b = curval
@@ -556,7 +557,8 @@ def play(board):
     blackexp = count()
     while True:
         start = time.time()
-        s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
+        s=minmax(board,3,1,(),0,whiteexp,True)[1]
+        #s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
         end = time.time()
         whiteexp.tinc(start,end)
         whiteexp.sinc()
@@ -569,7 +571,7 @@ def play(board):
             break
 
         start = time.time()
-        s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
+        s=alphabeta2(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
         end = time.time()
         blackexp.tinc(start,end)
         blackexp.sinc()
@@ -581,7 +583,7 @@ def play(board):
             print("black wins")
             print()
             break
-    print('White Total Nodes Expanded: ',end='')
+    print('White Total Nodes Expanded:',end='')
     print(whiteexp.count)
     print('White Avg Nodes Expanded:',end='')
     print(whiteexp.count/whiteexp.step)
