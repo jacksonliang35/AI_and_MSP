@@ -3,13 +3,19 @@ import random
 import copy
 import time
 current_pos=(0,0)
-whitestep = 0
-blackstep = 0
+
 class count:
     def __init__(self):
         self.count = 0
+        self.time = 0
+        self.step = 0
     def inc(self):
         self.count += 1
+    def tinc(self,start,end):
+        self.time += (end - start)
+    def sinc(self):
+        self.step += 1
+
 class Board:
     def __init__(self):
         # Parameters:config, white, black
@@ -426,8 +432,6 @@ def minmax2(board,depth,color,Max=True):
 """
 
 def alphabeta(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize a=neginf b=posinf
-    global blackstep
-    blackstep += 1
     c.inc()
     if depth==0 or board.hasfinished()>0:
         #==================
@@ -488,8 +492,6 @@ def alphabeta(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize 
       return (b,strategy)
 
 def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize a=neginf b=posinf
-    global whitestep
-    whitestep += 1
     c.inc()
     if depth==0 or board.hasfinished()>0:
         #==================
@@ -553,7 +555,11 @@ def play(board):
     whiteexp = count()
     blackexp = count()
     while True:
+        start = time.time()
         s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
+        end = time.time()
+        whiteexp.tinc(start,end)
+        whiteexp.sinc()
         board.printboard()
         board.move(s[0],s[1])
         if board.hasfinished() == 1:
@@ -562,7 +568,11 @@ def play(board):
             print()
             break
 
+        start = time.time()
         s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
+        end = time.time()
+        blackexp.tinc(start,end)
+        blackexp.sinc()
         board.printboard()
         board.move(s[0],s[1])
 
@@ -573,12 +583,22 @@ def play(board):
             break
     print('White Total Nodes Expanded: ',end='')
     print(whiteexp.count)
+    print('White Avg Nodes Expanded:',end='')
+    print(whiteexp.count/whiteexp.step)
     print('White Total Steps:',end='')
-    print(whitestep)
+    print(whiteexp.step)
+    print('White Avg Time per Move:',end='')
+    print(whiteexp.time/whiteexp.step)
+    print()
+
     print('Black Total Nodes Expanded: ',end='')
     print(blackexp.count)
+    print('Black Avg Nodes Expanded:',end='')
+    print(blackexp.count/blackexp.step)
     print('Black Total Steps:',end='')
-    print(blackstep)
+    print(blackexp.step)
+    print('Black Avg Time per Move:',end='')
+    print(blackexp.time/blackexp.step)
     print()
 
 
