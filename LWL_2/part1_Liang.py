@@ -315,7 +315,103 @@ class flowfree:
 				if self.graph[x][y] != '_' :
 					self.boundary[x,y] = 0 # not a boundary if a path is applied
 		"""
+	"""
+	def change_boundary_back(self,path):
+		for p in path:
+			x = p[0]
+			y = p[1]
+			if x - 1 >= 0 and y - 1 >= 0: # set surrounding area to be boundary
+				if self.boundary[x-1,y-1] != 2:
+					self.boundary[x-1,y-1] = 0
+			if x - 1 >= 0:
+				if self.boundary[x-1,y] != 2:
+					self.boundary[x-1,y] = 0
+			if x + 1 < self.height:
+				if self.boundary[x+1,y] != 2:
+					self.boundary[x+1,y] = 0
+			if x + 1 < self.height and y - 1 >= 0:
+				if self.boundary[x+1,y] != 2:
+					self.boundary[x+1,y-1] = 0
+			if y - 1 >= 0:
+				if self.boundary[x,y-1] != 2:
+					self.boundary[x,y-1] = 0
+			if y + 1 < self.width:
+				if self.boundary[x,y+1] != 2:
+					self.boundary[x,y+1] = 0
+			if x + 1 < self.height and y + 1 <self.width:
+				if self.boundary[x+1,y+1] != 2:
+					self.boundary[x+1,y+1] = 0
+			if x - 1 >= 0 and y + 1 < self.width:
+				if self.boundary[x-1,y+1] != 2:
+					self.boundary[x-1,y+1] = 0
+		#print(self.boundary)
+		for p in path:
+			self.boundary[p[0],p[1]] = 0
+		#print(self.boundary)
+		for p in path:
+			for x in range(p[0]-1,p[0]+2):
+				for y in range(p[1]-1,p[1]+2):
+					if x >= 0 and x < self.height and y >= 0 and y < self.width:
+						self.check_boundary(x,y)
 
+	def check_boundary(self,x,y):
+		if x - 1 >= 0 and y - 1 >= 0: # check surrounding area to be boundary
+			if self.boundary[x-1,y-1] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+		if x - 1 >= 0:
+			if self.boundary[x-1,y] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+		if x + 1 < self.height:
+			if self.boundary[x+1,y] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+		if x + 1 < self.height and y - 1 >= 0:
+			if self.boundary[x+1,y] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+		if y - 1 >= 0:
+			if self.boundary[x,y-1] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+		if y + 1 < self.width:
+			if self.boundary[x,y+1] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+		if x + 1 < self.height and y + 1 <self.width:
+			if self.boundary[x+1,y+1] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+		if x - 1 >= 0 and y + 1 < self.width:
+			if self.boundary[x-1,y+1] == 2:
+				self.boundary[x,y] = 1
+				return
+		else:
+			self.boundary[x,y] = 1
+			return
+	"""
 	def change_graph(self,path,color):
 		for i in path:
 			self.graph[i[0]][i[1]] = color
@@ -326,6 +422,12 @@ class flowfree:
 			for line in self.graph:
 				print(''.join(line))
 			print()
+
+	def change_graph_back(self,path,color):
+		for p in path:
+			self.graph[p[0]][p[1]] = '_'
+		self.graph[path[0][0]][path[0][1]] = color
+		self.graph[path[len(path)-1][0]][path[len(path)-1][1]] = color
 
 
 	def backtracking_h_dumb(self):
@@ -355,29 +457,19 @@ class flowfree:
 			self.colors=tempc
 		return False
 
-
-
 	def backtracking_h_smart(self):
 		colorlist = self.next_variable() # choose which variable to assign
 		Search_result=[]
-		cutoff = 6
+		cutoff = 5
 		upperbound = self.width ** 2 // 2
 		for p in colorlist:
 			for i in range(cutoff):
 				color = p[1]
-				Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
-				"""
-				if color=='O':
-					print(i)
-					print(Search_result)
-					print('--------------------')
-				"""
+				Search_result=self.Search(color,i) # search for the paths with constant cost return a list according to priority
 				for path in Search_result:
 					self.expansion += 1
 	                #change graph,boundary,colors
-					tempg=copy.deepcopy(self.graph)
 					tempb=copy.deepcopy(self.boundary)
-					tempc=copy.deepcopy(self.colors)
 					self.change_boundary(path)
 					self.change_graph(path,color)
 					self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
@@ -387,26 +479,18 @@ class flowfree:
 						result = self.backtracking_h_smart()
 						if result != False:
 							return result
-					self.graph=tempg #restore graph,boundary,colors
+					self.change_graph_back(path,color) #restore graph,boundary,colors
 					self.boundary=tempb
-					self.colors=tempc
+					self.colors.append(color)
 
 
 		color = colorlist[0][1]
 		for i in range(cutoff,upperbound):
 			Search_result=self.Search(color,i)# search for the paths with constant cost return a list according to priority
-			"""
-			if color=='O':
-				print(i)
-				print(Search_result)
-				print('--------------------')
-			"""
 			for path in Search_result:
 				self.expansion += 1
                 #change graph,boundary,colors
-				tempg=copy.deepcopy(self.graph)
 				tempb=copy.deepcopy(self.boundary)
-				tempc=copy.deepcopy(self.colors)
 				self.change_boundary(path)
 				self.change_graph(path,color)
 				self.colors=[self.colors[i] for i in range(len(self.colors)) if self.colors[i] != color] #change color
@@ -416,9 +500,9 @@ class flowfree:
 					result = self.backtracking_h_smart()
 					if result != False:
 						return result
-				self.graph=tempg #restore graph,boundary,colors
+				self.change_graph_back(path,color) #restore graph,boundary,colors
 				self.boundary=tempb
-				self.colors=tempc
+				self.colors.append(color)
 		return False
 
 
@@ -480,9 +564,8 @@ class flowfree:
 				q.put((x,y+1))
 		return no_color
 
-
 a=flowfree()
-a.readgraph('input991.txt')
+a.readgraph('input10102.txt')
 a.printgraph()
 a.findcolors()
 a.printgraph()
