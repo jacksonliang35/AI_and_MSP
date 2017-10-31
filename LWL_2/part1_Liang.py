@@ -519,8 +519,9 @@ class flowfree:
 		op = []
 		for c in colors:
 			if c in self.colors:
-				op += [(len(self.var_constrain(colors[c][0]))*len(self.var_constrain(colors[c][1])),c)]
-		return sorted(op)
+				op += [(abs(colors[c][1][0]-colors[c][0][0])+abs(colors[c][1][1]-colors[c][0][1]),c)]
+				#len(self.var_constrain(colors[c][0]))+len(self.var_constrain(colors[c][1]))
+		return sorted(op,reverse=True)
 
 	def will_fail(self):
 		# Check color connectedness
