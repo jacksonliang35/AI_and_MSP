@@ -225,7 +225,7 @@ class Board:
     def laststep(self,color):
         if color==1 and current_pos[0]==1:
           return 10
-        elif color==2 and current_pos[0]==6:
+        elif color==2 and current_pos[0]==8:
           return 10
         else:
           return 0
@@ -364,7 +364,7 @@ class Board:
         else:
           print('empty position!!!!')
           return -1
-        if ret==9:
+        if ret==8:
           return 40
         else:
           return ret
@@ -372,7 +372,8 @@ class Board:
 
 
 # Search Strategies
-def minmax(board,depth,color,wh,dirh,Max=True):
+def minmax(board,depth,color,wh,dirh,c,Max=True):
+    c.inc()
     if depth==0 or board.hasfinished()>0:
         return (board.oh1(color),((-1,-1),-1))
     if Max:
@@ -383,7 +384,7 @@ def minmax(board,depth,color,wh,dirh,Max=True):
               if board.canMove(w,dir)>0:
                   newboard = copy.deepcopy(board)
                   newboard.move(w,dir)
-                  temp=minmax(newboard,depth-1,color,w,dir,False)
+                  temp=minmax(newboard,depth-1,color,w,dir,c,False)
                   curval=temp[0]
                   if value < curval:
                       value = curval
@@ -396,7 +397,7 @@ def minmax(board,depth,color,wh,dirh,Max=True):
               if board.canMove(w,dir)>0:
                   newboard = copy.deepcopy(board)
                   newboard.move(w,dir)
-                  temp=minmax(newboard,depth-1,color,w,dir,True)
+                  temp=minmax(newboard,depth-1,color,w,dir,c,True)
                   curval=temp[0]
                   if value > curval:
                       value = curval
@@ -522,7 +523,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM+canmove,False)
+              temp=alphabeta2(newboard,depth-1,color,w,dir,a,b,c,canM+canmove,False)
               curval=temp[0]
               if a < curval:
                   a = curval
@@ -548,7 +549,7 @@ def alphabeta2(board,depth,color,wh,dirh,a,b,c,canM=0,Max=True):    # initialize
           if canmove>0:
               newboard = copy.deepcopy(board)
               newboard.move(w,dir)
-              temp=alphabeta(newboard,depth-1,color,w,dir,a,b,c,canM-canmove,True)
+              temp=alphabeta2(newboard,depth-1,color,w,dir,a,b,c,canM-canmove,True)
               curval=temp[0]
               if b > curval:
                   b = curval
@@ -562,8 +563,13 @@ def play(board):
     blackexp = count()
     while True:
         start = time.time()
+<<<<<<< Updated upstream
         s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
         #s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
+=======
+        #s=minmax(board,3,1,(),0,whiteexp)[1]
+        s=alphabeta(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
+>>>>>>> Stashed changes
         end = time.time()
         whiteexp.tinc(start,end)
         whiteexp.sinc()
@@ -576,8 +582,12 @@ def play(board):
             break
 
         start = time.time()
+<<<<<<< Updated upstream
         s=alphabeta2(board,4,1,(),0,float('-inf'),float('inf'),whiteexp)[1]
         #s=alphabeta(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
+=======
+        s=alphabeta2(board,4,2,(),0,float('-inf'),float('inf'),blackexp)[1]
+>>>>>>> Stashed changes
         end = time.time()
         blackexp.tinc(start,end)
         blackexp.sinc()
