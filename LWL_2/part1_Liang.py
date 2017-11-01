@@ -566,7 +566,7 @@ class flowfree:
 		return no_color
 
 a=flowfree()
-a.readgraph('input10102.txt')
+a.readgraph('input10101.txt')
 a.printgraph()
 a.findcolors()
 a.printgraph()
