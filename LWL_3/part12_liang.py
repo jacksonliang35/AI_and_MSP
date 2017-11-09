@@ -96,13 +96,13 @@ if __name__ == '__main__':
                 for j in range(width):
                     prob_map[curlabel,int(digit.val[i,j]),i,j] += 1
         else:
-            prob_map[curlabel,:,:,:] = (prob_map[curlabel,:,:,:] + k)/(priors[curlabel] + 2*k)
+            prob_map[curlabel,:,:,:] = (prob_map[curlabel,:,:,:] + k)/(priors[curlabel] + (2**(n*m))*k)
             curlabel += 1
             priors[curlabel] += 1
             for i in range(height):
                 for j in range(width):
                     prob_map[curlabel,int(digit.val[i,j]),i,j] += 1
-    prob_map[9,:,:,:] = (prob_map[9,:,:,:] + k)/(priors[9] + 2*k)
+    prob_map[9,:,:,:] = (prob_map[9,:,:,:] + k)/(priors[9] + (2**(n*m))*k)
 
     # Calculate prior probability
     priors /= 5000
