@@ -115,5 +115,14 @@ if __name__ == '__main__':
     for i in range(10):
         maxind[i] = np.argmax(mapprob[:,i])
         minind[i] = np.argmin(mapprob[:,i])
+    print('The most prototypical indexes:')
     print(maxind)
+    print('The least prototypical indexes:')
     print(minind)
+    # Find Odds Ratio
+    odds = np.zeros((10,10,28,28))  # class 1, class 2, i, j
+    for c1 in range(10):
+        for c2 in range(10):
+            for i in range(28):
+                for j in range(28):
+                    odds[c1,c2,i,j] = foreprob[c1][i,j]/foreprob[c2][i,j]
