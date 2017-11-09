@@ -43,12 +43,24 @@ def readfile(path,choice):
         digitset.append(digit(images[i],labels[i]))
     return digitset
 
+def calc_log_prob(F,B,O):
+    log_sum = 0
+    for i in range(28):
+        for j in range(28):
+            if O[i,j] == 1:
+                log_sum += np.log(F[i,j])
+            else:
+                log_sum += np.log(B[i,j])
+    return log_sum
 
 if __name__ == '__main__':
-    # Train
+    # Import data
     trainset = readfile('./digitdata/','training')
+    testset = readfile('./digitdata/','test')
+
+    # Train
     trainset_sorted = sorted(trainset, key=lambda digit: digit.lab)
-    k = 0.1     # Smoothing hyperparameter
+    k = 1     # Smoothing hyperparameter
     curlabel = 0
     priors = np.zeros(10)
     foreprob = [np.zeros((28,28))]*10
@@ -67,7 +79,30 @@ if __name__ == '__main__':
             backprob[curlabel] = backprob[curlabel] + (1-digit.val)
     # Calculate prior probability
     priors /= 5000
-    print(priors)
 
+    #################################################################
     # Test
-    #testset = readfile('./digitdata/','test')
+    confusion = np.zeros((10,10))
+    i = 0
+    for digit in testset:
+        # Calculate MAP probability
+        mapprob = np.zeros((1000,10))
+        for cl in range(10):
+            mapprob[i,cl] = np.log(priors[cl]) + calc_log_prob(foreprob[cl],backprob[cl],digit.val)
+        # Classify
+        classify = np.argmax(mapprob[i,:])
+        # Counting occurence
+        confusion[digit.lab,classify] += 1
+        i += 1
+    # Accuraccy
+    class_count = np.sum(confusion,axis=1)
+    accur = np.diag(confusion)
+    accur = np.divide(accur,class_count)
+    for i in range(10):
+        confusion[i,:] /= class_count[i]
+    # Find Prototypes
+    maxind = np.zeros(10)
+    minind = np.zeros(10)
+    for i in range(10):
+        maxind[i] = np.argmax(mapprob[:,i])
+        minind[i] = np.argmin(mapprob[:,i])
