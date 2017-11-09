@@ -77,6 +77,8 @@ if __name__ == '__main__':
             priors[curlabel] += 1
             foreprob[curlabel] = foreprob[curlabel] + digit.val
             backprob[curlabel] = backprob[curlabel] + (1-digit.val)
+    foreprob[9] = (foreprob[9] + k) / (priors[9] + 2*k)   # w/ Laplace smoothing
+    backprob[9] /= priors[9]   # need not smoothing
     # Calculate prior probability
     priors /= 5000
 
@@ -84,11 +86,12 @@ if __name__ == '__main__':
     # Test
     confusion = np.zeros((10,10))
     i = 0
+    mapprob = np.zeros((1000,10))
     for digit in testset:
         # Calculate MAP probability
-        mapprob = np.zeros((1000,10))
         for cl in range(10):
             mapprob[i,cl] = np.log(priors[cl]) + calc_log_prob(foreprob[cl],backprob[cl],digit.val)
+            #print(mapprob[i,cl])
         # Classify
         classify = np.argmax(mapprob[i,:])
         # Counting occurence
@@ -97,12 +100,20 @@ if __name__ == '__main__':
     # Accuraccy
     class_count = np.sum(confusion,axis=1)
     accur = np.diag(confusion)
+    overall_accur = sum(accur)/1000
     accur = np.divide(accur,class_count)
     for i in range(10):
         confusion[i,:] /= class_count[i]
+    np.set_printoptions(precision=3)
+    print('The overall accuracy is: ',end='')
+    print(overall_accur)
+    print('The confusion matrix is:')
+    print(confusion)
     # Find Prototypes
     maxind = np.zeros(10)
     minind = np.zeros(10)
     for i in range(10):
         maxind[i] = np.argmax(mapprob[:,i])
         minind[i] = np.argmin(mapprob[:,i])
+    print(maxind)
+    print(minind)
