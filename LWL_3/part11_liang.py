@@ -91,7 +91,6 @@ if __name__ == '__main__':
         # Calculate MAP probability
         for cl in range(10):
             mapprob[i,cl] = np.log(priors[cl]) + calc_log_prob(foreprob[cl],backprob[cl],digit.val)
-            #print(mapprob[i,cl])
         # Classify
         classify = np.argmax(mapprob[i,:])
         # Counting occurence
