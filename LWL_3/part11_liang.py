@@ -71,7 +71,7 @@ if __name__ == '__main__':
             foreprob[curlabel] = foreprob[curlabel] + digit.val
             backprob[curlabel] = backprob[curlabel] + (1-digit.val)
         else:
-            foreprob[curlabel] = (foreprob[curlabel] + k) / (priors[curlabel] + 2*k)   # w/ Laplace smoothing
+            foreprob[curlabel] = (foreprob[curlabel] + k) / (priors[curlabel] + 10*k)   # w/ Laplace smoothing
             backprob[curlabel] /= priors[curlabel]   # need not smoothing
             curlabel += 1
             priors[curlabel] += 1
