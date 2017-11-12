@@ -77,7 +77,7 @@ if __name__ == '__main__':
             priors[curlabel] += 1
             foreprob[curlabel] = foreprob[curlabel] + digit.val
             backprob[curlabel] = backprob[curlabel] + (1-digit.val)
-    foreprob[9] = (foreprob[9] + k) / (priors[9] + 2*k)   # w/ Laplace smoothing
+    foreprob[9] = (foreprob[9] + k) / (priors[9] + 10*k)   # w/ Laplace smoothing
     backprob[9] /= priors[9]   # need not smoothing
     # Calculate prior probability
     priors /= 5000
