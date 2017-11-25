@@ -87,12 +87,19 @@ if __name__ == '__main__':
     confusion = np.zeros((10,10))
     i = 0
     mapprob = np.zeros((1000,10))
+    probval =[[],[],[],[],[],[],[],[],[],[]]
+    probimg =[[],[],[],[],[],[],[],[],[],[]]
+    probidx =[[],[],[],[],[],[],[],[],[],[]]
     for digit in testset:
         # Calculate MAP probability
         for cl in range(10):
             mapprob[i,cl] = np.log(priors[cl]) + calc_log_prob(foreprob[cl],backprob[cl],digit.val)
         # Classify
         classify = np.argmax(mapprob[i,:])
+        val = max(mapprob[i,:])
+        probval[classify].append(val)
+        probimg[classify].append(digit)
+        probidx[classify].append(i)
         # Counting occurence
         confusion[digit.lab,classify] += 1
         i += 1
@@ -108,7 +115,30 @@ if __name__ == '__main__':
     print(overall_accur)
     print('The confusion matrix is:')
     print(confusion)
+    
     # Find Prototypes
+    print('max prob')
+    print()
+    for i in range(10):
+        print('Max Class: ',end='')
+        print(i,end='')
+        print(' Index: ',end='')
+        print(probidx[i][probval[i].index(max(probval[i]))])
+        for line in probimg[i][probval[i].index(max(probval[i]))].img:
+            print(''.join(line))
+        
+   
+    print('min prob')
+    print()
+    for i in range(10):
+        print('Min Class: ',end='')
+        print(i,end='')
+        print(' Index: ',end='')
+        print(probidx[i][probval[i].index(min(probval[i]))])
+        for line in probimg[i][probval[i].index(min(probval[i]))].img:
+            print(''.join(line))
+    
+    '''
     maxind = np.zeros(10)
     minind = np.zeros(10)
     for i in range(10):
@@ -116,12 +146,68 @@ if __name__ == '__main__':
         minind[i] = np.argmin(mapprob[:,i])
     print('The most prototypical indexes:')
     print(maxind)
+
+    for i in maxind:
+        for line in testset[int(i)].img:
+            print(''.join(line))
+        print()
     print('The least prototypical indexes:')
     print(minind)
+
+    for i in minind:
+        print(testset[int(i)].lab)
+        for line in testset[int(i)].img:
+            print(''.join(line))
+        print()
+    '''
     # Find Odds Ratio
     odds = np.zeros((10,10,28,28))  # class 1, class 2, i, j
     for c1 in range(10):
         for c2 in range(10):
             for i in range(28):
                 for j in range(28):
-                    odds[c1,c2,i,j] = foreprob[c1][i,j]/foreprob[c2][i,j]
+                    odds[c1,c2,i,j] = np.log(foreprob[c1][i,j])-np.log(foreprob[c2][i,j])
+    import matplotlib.pyplot as plt
+    import numpy as np
+    '''
+    plt.figure()
+    plt.imshow(np.log(foreprob[5]),interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(odds[5][3], interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(np.log(foreprob[3]), interpolation='nearest')
+    plt.colorbar()
+    
+    plt.figure()
+    plt.imshow(np.log(foreprob[8]),interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(odds[8][3], interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(np.log(foreprob[3]), interpolation='nearest')
+    plt.colorbar()
+    
+    plt.figure()
+    plt.imshow(np.log(foreprob[4]),interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(odds[4][9], interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(np.log(foreprob[9]), interpolation='nearest')
+    plt.colorbar()
+    
+    plt.figure()
+    plt.imshow(np.log(foreprob[7]),interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(odds[7][9], interpolation='nearest')
+    plt.colorbar()
+    plt.figure()
+    plt.imshow(np.log(foreprob[9]), interpolation='nearest')
+    plt.colorbar()
+    plt.show()
+    '''
