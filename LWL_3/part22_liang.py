@@ -60,46 +60,50 @@ if __name__ == '__main__':
     testset = readfile(path,False)
     # Train
     trainset_sorted = sorted(trainset, key=lambda word: word.label)
-    k = 1     # Smoothing hyperparameter
-    curlabel = 0
-    priors = np.zeros(5)
-    prob_map = np.zeros((5,30,13))    # (class,height,width)
-    for w in trainset_sorted:
-        if w.label==curlabel+1:
-            priors[curlabel] += 1
-            prob_map[curlabel,:,:] = prob_map[curlabel,:,:] + w.image
-        else:
-            prob_map[curlabel,:,:] = (prob_map[curlabel,:,:] + k) / (priors[curlabel] + 5*k)   # Laplace smoothing
-            curlabel += 1
-            priors[curlabel] += 1
-            prob_map[curlabel,:,:] = prob_map[curlabel,:,:] + w.image
-    prob_map[4,:,:] = (prob_map[4,:,:] + k) / (priors[4] + 5*k)   # Laplace smoothing
-    # Calculate prior probability
-    priors /= len(trainset)
+    for k in [.1,.2,.3,.4,.5,1,2,3,5,10]:
+        curlabel = 0
+        priors = np.zeros(5)
+        prob_map = np.zeros((5,30,13))    # (class,height,width)
+        for w in trainset_sorted:
+            if w.label==curlabel+1:
+                priors[curlabel] += 1
+                prob_map[curlabel,:,:] = prob_map[curlabel,:,:] + w.image
+            else:
+                prob_map[curlabel,:,:] = (prob_map[curlabel,:,:] + k) / (priors[curlabel] + 5*k)   # Laplace smoothing
+                curlabel += 1
+                priors[curlabel] += 1
+                prob_map[curlabel,:,:] = prob_map[curlabel,:,:] + w.image
+        prob_map[4,:,:] = (prob_map[4,:,:] + k) / (priors[4] + 5*k)   # Laplace smoothing
+        # Calculate prior probability
+        priors /= len(trainset)
 
-    #################################################################
-    # Test
-    confusion = np.zeros((5,5))
-    i = 0
-    mapprob = np.zeros((len(testset),5))
-    for w in testset:
-        # Calculate MAP probability
-        for cl in range(5):
-            mapprob[i,cl] = np.log(priors[cl]) + calc_log_prob(prob_map[cl,:,:],w.image)
-        # Classify
-        classify = np.argmax(mapprob[i,:])
-        # Counting occurence
-        confusion[w.label-1,classify] += 1
-        i += 1
-    # Accuraccy
-    class_count = np.sum(confusion,axis=1)
-    accur = np.diag(confusion)
-    overall_accur = sum(accur)/len(testset)
-    accur = np.divide(accur,class_count)
-    for i in range(5):
-        confusion[i,:] /= class_count[i]
-    np.set_printoptions(precision=3)
-    print('The overall accuracy is: ',end='')
-    print(overall_accur)
-    print('The confusion matrix is:')
-    print(confusion)
+        #################################################################
+        # Test
+        confusion = np.zeros((5,5))
+        i = 0
+        mapprob = np.zeros((len(testset),5))
+        for w in testset:
+            # Calculate MAP probability
+            for cl in range(5):
+                mapprob[i,cl] = np.log(priors[cl]) + calc_log_prob(prob_map[cl,:,:],w.image)
+            # Classify
+            classify = np.argmax(mapprob[i,:])
+            # Counting occurence
+            confusion[w.label-1,classify] += 1
+            i += 1
+        # Accuraccy
+        class_count = np.sum(confusion,axis=1)
+        accur = np.diag(confusion)
+        overall_accur = sum(accur)/len(testset)
+        accur = np.divide(accur,class_count)
+        for i in range(5):
+            confusion[i,:] /= class_count[i]
+        np.set_printoptions(precision=3)
+        print('The corresponding k is:',end='')
+        print(k)
+        print('The overall accuracy is: ',end='')
+        print(overall_accur)
+        print()
+#        print('The confusion matrix is:')
+#        print(confusion)
+
