@@ -46,7 +46,7 @@ def distL1(x1,x2):
     return np.sum((np.abs(x1-x2)),axis=1)
 
 def distL2(x1,x2):
-    return sum((abs(x1**2-x2**2))**0.5,axis=1)
+    return np.sum((np.abs(x1**2-x2**2))**0.5,axis=1)
 
 if __name__ == '__main__':
     # Import data
