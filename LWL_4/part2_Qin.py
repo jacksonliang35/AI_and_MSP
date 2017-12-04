@@ -21,13 +21,8 @@ class Pongcontstate:
             self.reward = -1
         return
 
-    def display(self):
-        plt.hold(True)
-        plt.plot([self.bx],[1-self.by],'ro')
-        plt.plot([1,1],[0.8-self.py,1-self.py],linewidth=8.0)
-        plt.axis([0,1,0,1])
-        plt.show()
-        plt.hold(False)
+    def getCurrentFrame(self):
+        return plt.plot([self.bx],[1-self.by],'ro',[1,1],[0.8-self.py,1-self.py],linewidth=5.0)
 
     def getDiscreteState(self):
         return Pongdiscstate(self.bx,self.by,self.vx,self.vy,self.py,self.reward)
@@ -114,5 +109,12 @@ class Pongdiscstate:
             self.reward = rd
 
 if __name__ == '__main__':
-    test = Pongcontstate()
-    test.display()
+    seq = [Pongcontstate()]
+    # Draw solution
+    fig = plt.figure()
+    ims = []
+    for state in seq:
+        ims.append(plt.plot([state.bx],[1-state.by],'ro',[1,1],[0.8-state.py,1-state.py],linewidth=5.0))
+    im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=True)
+    plt.axis([0,1,0,1])
+    plt.show()
