@@ -109,12 +109,24 @@ class Pongdiscstate:
             self.reward = rd
 
 if __name__ == '__main__':
-    seq = [Pongcontstate()]
+    # Train
+    N = 1000
+    for i in range(N):
+
+    #############################################
+    # Test & Display
+    curr = Pongcontstate()
+    play = [curr]
+    while not curr.hasfinished():
+        a = ...
+        curr = curr.nextstate(a)
+        play.append(curr)
+
     # Draw solution
     fig = plt.figure()
     ims = []
-    for state in seq:
-        ims.append(plt.plot([state.bx],[1-state.by],'ro',[1,1],[0.8-state.py,1-state.py],linewidth=5.0))
+    for s in play:
+        ims.append(plt.plot([s.bx],[1-s.by],'ro',[1,1],[0.8-s.py,1-s.py],linewidth=5.0))
     im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=True)
     plt.axis([0,1,0,1])
     plt.show()
