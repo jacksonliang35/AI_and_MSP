@@ -163,6 +163,9 @@ if __name__ == '__main__':
             curr = nexts
             curd = nextd
             ind = nextind
+        # end TD update
+        Q[ind,a+1] = Q[ind,a+1] + alpha*(curr.rd - Q[ind,a+1])
+        N[ind,a+1] = N[ind,a+1] + 1
         if i % 10000 == 0:
             print('Training Process: %d%%...' % (i//1000))
     #############################################
