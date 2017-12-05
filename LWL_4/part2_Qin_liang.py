@@ -186,8 +186,8 @@ if __name__ == '__main__':
         if curr.bounce > best:
             best = curr.bounce
             bestplay = play
-        if i % 100 == 0:
-            print('Testing Process: %d%%...' % (i//10))
+        if t % 100 == 0:
+            print('Testing Process: %d%%...' % (t//10))
     # Print average bouncing
     print('Testing Completed.')
     print('The average number of bouncing is %f' % np.mean(num_bounce))
