@@ -199,6 +199,6 @@ if __name__ == '__main__':
     ims = []
     for s in bestplay:
         ims.append(plt.plot([s.bx],[1-s.by],'ro',[1,1],[0.8-s.py,1-s.py],linewidth=6.0))
-    im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=True)
+    im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=False)
     plt.axis([0,1,0,1])
     plt.show()
