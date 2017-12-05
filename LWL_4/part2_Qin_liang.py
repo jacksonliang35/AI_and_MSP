@@ -121,7 +121,8 @@ def getindex(state):
         for i in range(1,5):
             ind = ind * size[i] + raw_ind[i]
         return ind
-
+def fexplore(Q,N,ind):
+    return
 if __name__ == '__main__':
     # Train
     C = 1
