@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import math # math.floor
+from collections import Counter # Count occurence
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
@@ -130,14 +131,14 @@ def getindex(state):
 def fexplore(q,n):
     # For exploration purposes
     # Call w/ Q[ind,:].copy()
-    Ne = 3
+    Ne = 5
     for i in range(3):
         if n[i] < Ne:
-            q[i] = random.random()/2
+            q[i] = 0.1
     return q
 if __name__ == '__main__':
     # Train
-    C = 1
+    C = 10
     gamma = 0.9
     num_train = 100000
     Q = np.zeros((12*12*2*3*12+1,3))    # Action-utility
@@ -162,9 +163,6 @@ if __name__ == '__main__':
             curr = nexts
             curd = nextd
             ind = nextind
-        # End state TD update
-        Q[ind,a+1] = Q[ind,a+1] + C/(C+N[ind,a+1])*(curr.rd + gamma*max(Q[nextind,:]) - Q[ind,a+1])
-        N[ind,a+1] = N[ind,a+1] + 1
         if i % 10000 == 0:
             print('Training Process: %d%%...' % (i//1000))
     #############################################
@@ -190,6 +188,8 @@ if __name__ == '__main__':
             print('Testing Process: %d%%...' % (t//10))
     # Print average bouncing
     print('Testing Completed.')
+    print('Counts for diff. number of bounces:',end='')
+    print(Counter(num_bounce))
     print('The average number of bouncing is %f' % np.mean(num_bounce))
     # Draw best solution
     fig = plt.figure()
