@@ -166,7 +166,7 @@ if __name__ == '__main__':
         Q[ind,a+1] = Q[ind,a+1] + C/(C+N[ind,a+1])*(curr.rd + gamma*max(Q[nextind,:]) - Q[ind,a+1])
         N[ind,a+1] = N[ind,a+1] + 1
         if i % 10000 == 0:
-            print('Training Process: %d%%...' % (i//10000))
+            print('Training Process: %d%%...' % (i//1000))
     #############################################
     print('Training Completed. Start testing...')
     # Test & Display
@@ -187,7 +187,7 @@ if __name__ == '__main__':
             best = curr.bounce
             bestplay = play
         if i % 100 == 0:
-            print('Testing Process: %d%%...' % (i//100))
+            print('Testing Process: %d%%...' % (i//10))
     # Print average bouncing
     print('Testing Completed.')
     print('The average number of bouncing is %f' % np.mean(num_bounce))
