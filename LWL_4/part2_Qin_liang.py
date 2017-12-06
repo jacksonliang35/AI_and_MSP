@@ -128,77 +128,79 @@ def getindex(state):
         for i in range(1,5):
             ind = ind * size[i] + raw_ind[i]
         return ind
-def fexplore(q,n):
+def fexplore(q,n,Ne,R):
     # For exploration purposes
     # Call w/ Q[ind,:].copy()
-    Ne = 5
     for i in range(3):
         if n[i] < Ne:
-            q[i] = 0.1
+            q[i] = R
     return q
 if __name__ == '__main__':
     # Train
     C = 10
-    gamma = 0.9
-    num_train = 100000
-    Q = np.zeros((12*12*2*3*12+1,3))    # Action-utility
-    N = np.zeros((12*12*2*3*12+1,3))    # State-action frequency
-    for i in range(num_train):
-        # Play game
-        curr = Pongcontstate()
-        curd = curr.getDiscreteState()
-        ind = getindex(curd)
-        while not curr.hasfinished():
-            a = np.argmax(fexplore(Q[ind,:].copy(),N[ind,:]))-1   # {-1,0,1}
-            # Get next state
-            nexts = curr.nextstate(a)
-            nextd = nexts.getDiscreteState()
-            nextind = getindex(nextd)
-            # Get current learning rate
-            alpha = C/(C+N[ind,a+1])
-            # TD update
-            Q[ind,a+1] = Q[ind,a+1] + alpha*(curr.rd + gamma*max(Q[nextind,:]) - Q[ind,a+1])
-            N[ind,a+1] = N[ind,a+1] + 1
-            # Re-assign curr
-            curr = nexts
-            curd = nextd
-            ind = nextind
-        # end TD update
-        Q[ind,a+1] = Q[ind,a+1] + alpha*(curr.rd - Q[ind,a+1])
-        N[ind,a+1] = N[ind,a+1] + 1
-        if i % 10000 == 0:
-            print('Training Process: %d%%...' % (i//1000))
-    #############################################
-    print('Training Completed. Start testing...')
-    # Test & Display
-    num_test = 1000
-    num_bounce = np.zeros(num_test)
-    best = -1
-    for t in range(num_test):
-        curr = Pongcontstate()
-        play = [curr]
-        while not curr.hasfinished():
+    for gamma in [0.7,0.8,0.9,0.95]:
+        Ne = 5
+        R = 0.1
+        num_train = 100000
+        Q = np.zeros((12*12*2*3*12+1,3))    # Action-utility
+        N = np.zeros((12*12*2*3*12+1,3))    # State-action frequency
+        for i in range(num_train):
+            # Play game
+            curr = Pongcontstate()
             curd = curr.getDiscreteState()
-            a = np.argmax(Q[getindex(curd),:])-1
-            curr = curr.nextstate(a)
-            play.append(curr)
-        num_bounce[t] = curr.bounce
-        # Save best for display
-        if curr.bounce > best:
-            best = curr.bounce
-            bestplay = play
-        if t % 100 == 0:
-            print('Testing Process: %d%%...' % (t//10))
-    # Print average bouncing
-    print('Testing Completed.')
-    print('Counts for diff. number of bounces:',end='')
-    print(Counter(num_bounce))
-    print('The average number of bouncing is %f' % np.mean(num_bounce))
-    # Draw best solution
-    fig = plt.figure()
-    ims = []
-    for s in bestplay:
-        ims.append(plt.plot([s.bx],[1-s.by],'ro',[1,1],[0.8-s.py,1-s.py],linewidth=6.0))
-    im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=False)
-    plt.axis([0,1,0,1])
-    plt.show()
+            ind = getindex(curd)
+            while not curr.hasfinished():
+                a = np.argmax(fexplore(Q[ind,:].copy(),N[ind,:],Ne,R))-1   # {-1,0,1}
+                # Get next state
+                nexts = curr.nextstate(a)
+                nextd = nexts.getDiscreteState()
+                nextind = getindex(nextd)
+                # Get current learning rate
+                alpha = C/(C+N[ind,a+1])
+                # TD update
+                Q[ind,a+1] = Q[ind,a+1] + alpha*(curr.rd + gamma*max(Q[nextind,:]) - Q[ind,a+1])
+                N[ind,a+1] = N[ind,a+1] + 1
+                # Re-assign curr
+                curr = nexts
+                curd = nextd
+                ind = nextind
+            # end TD update
+            Q[ind,a+1] = Q[ind,a+1] + alpha*(curr.rd - Q[ind,a+1])
+            N[ind,a+1] = N[ind,a+1] + 1
+            if i % 10000 == 0:
+                print('Training Process: %d%%...' % (i//1000))
+        ############################################
+        print('Training Completed. Start testing...')
+        # Test & Display
+        num_test = 1000
+        num_bounce = np.zeros(num_test)
+        best = -1
+        for t in range(num_test):
+            curr = Pongcontstate()
+            play = [curr]
+            while not curr.hasfinished():
+                curd = curr.getDiscreteState()
+                a = np.argmax(Q[getindex(curd),:])-1
+                curr = curr.nextstate(a)
+                play.append(curr)
+            num_bounce[t] = curr.bounce
+            # Save best for display
+            if curr.bounce > best:
+                best = curr.bounce
+                bestplay = play
+        #     if t % 100 == 0:
+        #         print('Testing Process: %d%%...' % (t//10))
+        # # Print average bouncing
+        # print('Testing Completed.')
+        # print('Counts for diff. number of bounces:',end='')
+        # print(Counter(num_bounce).most_common())
+        print('(C,gamma)=(%f,%f)' % (C,gamma))
+        print('Avg bouncing: %f' % np.mean(num_bounce))
+        # # Draw best solution
+        # fig = plt.figure()
+        # ims = []
+        # for s in bestplay:
+        #     ims.append(plt.plot([s.bx],[1-s.by],'ro',[1,1],[0.8-s.py,1-s.py],linewidth=6.0))
+        # im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=False)
+        # plt.axis([0,1,0,1])
+        # plt.show()
