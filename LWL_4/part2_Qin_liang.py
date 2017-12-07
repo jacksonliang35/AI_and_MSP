@@ -137,10 +137,10 @@ def fexplore(q,n,Ne,R):
     return q
 if __name__ == '__main__':
     # Train
-    C = 20
-    for gamma in [0.7,0.8,0.9,0.95]:
-        Ne = 5
-        R = 0.1
+    gamma = 0.9
+    C = 5
+    for R in [0.2,0.3,0.4,0.5]:
+        Ne = 10
         num_train = 100000
         Q = np.zeros((12*12*2*3*12+1,3))    # Action-utility
         N = np.zeros((12*12*2*3*12+1,3))    # State-action frequency
@@ -194,7 +194,7 @@ if __name__ == '__main__':
         # print('Testing Completed.')
         # print('Counts for diff. number of bounces:',end='')
         # print(Counter(num_bounce).most_common())
-        print('(C,gamma)=(%f,%f)' % (C,gamma))
+        print('(C,gamma,R,Ne)=(%d,%f,%f,%d)' % (C,gamma,R,Ne))
         print('Avg bouncing: %f' % np.mean(num_bounce))
         # # Draw best solution
         # fig = plt.figure()
