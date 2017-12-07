@@ -22,3 +22,16 @@ Avg bouncing: 8.936000
 Avg bouncing: 7.954000
 (C,gamma)=(10.000000,0.950000)
 Avg bouncing: 7.771000
+(C,gamma)=(15.000000,0.700000)
+Avg bouncing: 8.432000
+Avg bouncing: 6.683000
+(C,gamma)=(15.000000,0.800000)
+Avg bouncing: 5.586000
+(C,gamma)=(15.000000,0.900000)
+Avg bouncing: 7.324000
+(C,gamma)=(15.000000,0.950000)
+Avg bouncing: 6.980000
+(C,gamma)=(20.000000,0.700000)
+Avg bouncing: 6.899000
+(C,gamma)=(20.000000,0.800000)
+Avg bouncing: 7.063000

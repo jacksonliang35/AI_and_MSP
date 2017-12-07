@@ -137,7 +137,7 @@ def fexplore(q,n,Ne,R):
     return q
 if __name__ == '__main__':
     # Train
-    C = 10
+    C = 20
     for gamma in [0.7,0.8,0.9,0.95]:
         Ne = 5
         R = 0.1
