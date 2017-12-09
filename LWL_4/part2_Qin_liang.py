@@ -2,6 +2,7 @@ import numpy as np
 import random
 import math # math.floor
 from collections import Counter # Count occurence
+import time
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
@@ -144,6 +145,7 @@ if __name__ == '__main__':
     num_train = 100000
     Q = np.zeros((12*12*2*3*12+1,3))    # Action-utility
     N = np.zeros((12*12*2*3*12+1,3))    # State-action frequency
+    start = time.time()
     for i in range(num_train):
         # Play game
         curr = Pongcontstate()
@@ -171,6 +173,7 @@ if __name__ == '__main__':
         if i % 10000 == 0:
             print('Training Process: %d%%...' % (i//1000))
     ############################################
+    end = time.time()
     print('Training Completed. Start testing...')
     # Test & Display
     num_test = 1000
@@ -195,6 +198,7 @@ if __name__ == '__main__':
     print(Counter(num_bounce).most_common())
     print('(C,gamma,R,Ne)=(%d,%f,%f,%d)' % (C,gamma,R,Ne))
     print('Avg bouncing: %f' % np.mean(num_bounce))
+    print('Training time: %fms' % (end-start))
     # Draw worst solution
     fig = plt.figure()
     ims = []
