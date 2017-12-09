@@ -1,6 +1,6 @@
 import os
 import numpy as np
-
+import matplotlib.pyplot as plt
 class digit:
     def __init__(self,image,label):
         self.img = image
@@ -50,13 +50,17 @@ if __name__ == '__main__':
     # Train
     #################################################################
     trainset_sorted = sorted(trainset, key=lambda x: x.lab)
-    alpha = 1
+    
     #w = np.zeros((10,28*28))
     #b = np.zeros(10)
     w = np.random.rand(10,28*28)
     b = np.random.rand(10)
-    epochs = 1
-    for i in range(epochs):
+    
+    epochs = 100
+    accu = np.zeros(epochs)
+    cm = []
+    for t in range(epochs):
+        alpha = 1/((t+1)**2)
         for idx in trainset:
             train_result = np.argmax(np.sign(np.dot(w,idx.val.flatten())+b))
             w[train_result,:] = w[train_result,:]-alpha*idx.val.flatten()
@@ -65,31 +69,42 @@ if __name__ == '__main__':
             b[idx.lab] = b[idx.lab] + alpha*1.0
     #Test
     #################################################################
-    confusion = np.zeros((10,10))
-    i = 0
-    probval =[[],[],[],[],[],[],[],[],[],[]]
-    probimg =[[],[],[],[],[],[],[],[],[],[]]
-    probidx =[[],[],[],[],[],[],[],[],[],[]]
-    for testidx in testset:
-        # Classify
-        classify = np.argmax(np.sign(np.dot(w,testidx.val.flatten())+b))
-        print(classify)
-        val = max(np.sign(np.dot(w,testidx.val.flatten())+b))
-        probval[classify].append(val)
-        probimg[classify].append(testidx)
-        probidx[classify].append(i)
-        # Counting occurence
-        confusion[testidx.lab,classify] += 1
-        i += 1
-    # Accuraccy
-    class_count = np.sum(confusion,axis=1)
-    accur = np.diag(confusion)
-    overall_accur = sum(accur)/1000
-    accur = np.divide(accur,class_count)
-    for i in range(10):
-        confusion[i,:] /= class_count[i]
+        confusion = np.zeros((10,10))
+        i = 0
+        probval =[[],[],[],[],[],[],[],[],[],[]]
+        probimg =[[],[],[],[],[],[],[],[],[],[]]
+        probidx =[[],[],[],[],[],[],[],[],[],[]]
+        for testidx in testset:
+            # Classify
+            classify = np.argmax(np.sign(np.dot(w,testidx.val.flatten())+b))
+            val = max(np.sign(np.dot(w,testidx.val.flatten())+b))
+            probval[classify].append(val)
+            probimg[classify].append(testidx)
+            probidx[classify].append(i)
+            # Counting occurence
+            confusion[testidx.lab,classify] += 1
+            i += 1
+        # Accuraccy
+        class_count = np.sum(confusion,axis=1)
+        accur = np.diag(confusion)
+        overall_accur = sum(accur)/1000
+        accur = np.divide(accur,class_count)
+        for i in range(10):
+            confusion[i,:] /= class_count[i]
+        accu[t]=overall_accur
+        cm.append(confusion)
+        
     np.set_printoptions(precision=3)
     print('The overall accuracy is: ',end='')
-    print(overall_accur)
+    print(max(accu))
     print('The confusion matrix is:')
-    print(confusion)
+    print(cm[np.argmax(accu)])
+    print(np.argmax(accu)+1)
+
+    plt.figure()
+    plt.plot(range(1,epochs+1),accu)
+    plt.xlabel('number of epochs')
+    plt.ylabel('Accuracy')
+    plt.title('Training curve')
+    plt.grid(True)
+    plt.show()

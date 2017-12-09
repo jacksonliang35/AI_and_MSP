@@ -1,6 +1,8 @@
 import os
 import numpy as np
 from collections import Counter
+import matplotlib.pyplot as plt
+import time
 class digit:
     def __init__(self,image,label):
         self.img = image
@@ -63,25 +65,49 @@ if __name__ == '__main__':
 
     #Test
     #################################################################
-    k=1
-    confusion = np.zeros((10,10))
-    i = 0
-    for testidx in testset:
-        # Classify
-        neighbors = np.argsort(distL1(dataset,testidx.val.flatten()))[0:k] # k's nearest neighbor
-        classify = int(Counter([ trainlabel[j] for j in neighbors]).most_common()[0][0])# most common value
-        # Counting occurence
-        confusion[testidx.lab,classify] += 1
-        i += 1
-    # Accuraccy
-    class_count = np.sum(confusion,axis=1)
-    accur = np.diag(confusion)
-    overall_accur = sum(accur)/1000
-    accur = np.divide(accur,class_count)
-    for i in range(10):
-        confusion[i,:] /= class_count[i]
+    kk=20
+    accu=np.zeros(kk)
+    cm=[]
+    t=[]
+    for k in range(1,kk+1):
+        start = time.time()
+        confusion = np.zeros((10,10))
+        i = 0
+        for testidx in testset:
+            # Classify
+            neighbors = np.argsort(distL1(dataset,testidx.val.flatten()))[0:k] # k's nearest neighbor
+            classify = int(Counter([ trainlabel[j] for j in neighbors]).most_common()[0][0])# most common value
+            # Counting occurence
+            confusion[testidx.lab,classify] += 1
+            i += 1
+        # Accuraccy
+        class_count = np.sum(confusion,axis=1)
+        accur = np.diag(confusion)
+        overall_accur = sum(accur)/1000
+        accur = np.divide(accur,class_count)
+        for i in range(10):
+            confusion[i,:] /= class_count[i]
+        cm.append(confusion)
+        accu[k-1]=overall_accur
+        end = time.time()
+        t.append(end-start)
+
     np.set_printoptions(precision=3)
     print('The overall accuracy is: ',end='')
-    print(overall_accur)
+    print(max(accu))
     print('The confusion matrix is:')
-    print(confusion)
+    print(cm[np.argmax(accu)])
+    print(np.argmax(accu)+1)
+    plt.figure()
+    plt.plot(range(1,kk+1),accu)
+    plt.xlabel('number of k')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy vs value of K')
+    plt.grid(True)
+    plt.figure()
+    plt.plot(range(1,kk+1),t)
+    plt.xlabel('number of k')
+    plt.ylabel('Running time/s')
+    plt.title('Running time vs value of K')
+    plt.grid(True)
+    plt.show()
