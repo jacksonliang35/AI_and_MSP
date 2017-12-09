@@ -73,8 +73,8 @@ class Pongcontstate:
                 end = True
             else:
                 new_bounce2 += 1
-                new_bx = 2 - new_bx
-                new_vx = min(-0.03, -new_vx + 0.03 * random.random() - 0.015)
+                new_bx = -new_bx
+                new_vx = max(0.03, -new_vx + 0.03 * random.random() - 0.015)
                 new_vy = new_vy + 0.06 * random.random() - 0.03
         # ===========================================
         if new_by > 1:
@@ -178,7 +178,7 @@ def getindex(state):
         raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py]
         size = [12, 12, 2, 3, 12]
         ind = raw_ind[0]
-        for i in range(1, 5):
+        for i in range(1, 6):
             ind = ind * size[i] + raw_ind[i]
         return ind
 
@@ -189,12 +189,12 @@ def getindex2(state):
     # type(state) = Pongdiscstate
     # action = {-1,0,1}
     if state.hasfinished():
-        return 12 * 12 * 2 * 3 * 12  # bx*by*vx*vy*py
+        return 12 * 12 * 2 * 3 * 12 * 12  # bx*by*vx*vy*py*py2
     else:
-        raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py2]
-        size = [12, 12, 2, 3, 12]
+        raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py, state.py2]
+        size = [12, 12, 2, 3, 12, 12]
         ind = raw_ind[0]
-        for i in range(1, 5):
+        for i in range(1, 6):
             ind = ind * size[i] + raw_ind[i]
         return ind
 
@@ -203,20 +203,20 @@ def getindex2(state):
 def fexplore(q, n):
     # For exploration purposes
     # Call w/ Q[ind,:].copy()
-    Ne = 5
+    Ne = 10
     for i in range(3):
         if n[i] < Ne:
-            q[i] = 0.1
+            q[i] = 0.3
     return q
 
 
 if __name__ == '__main__':
     # Train
-    C = 10
+    C = 5
     gamma = 0.9
-    num_train = 100000
-    Q = np.zeros((12 * 12 * 2 * 3 * 12 + 1, 3))  # Action-utility
-    N = np.zeros((12 * 12 * 2 * 3 * 12 + 1, 3))  # State-action frequency
+    num_train = 10000
+    Q = np.zeros((12 * 12 * 2 * 3 * 12 * 12 + 1, 3))  # Action-utility
+    N = np.zeros((12 * 12 * 2 * 3 * 12 * 12 + 1, 3))  # State-action frequency
     for i in range(num_train):
         # Play game
         curr = Pongcontstate()
@@ -224,17 +224,24 @@ if __name__ == '__main__':
         ind = getindex(curd)
         while not curr.hasfinished():
             a = np.argmax(fexplore(Q[ind, :].copy(), N[ind, :])) - 1  # {-1,0,1}
-
-            a2 = np.sign(a)
+            posB = curr.getBallpos()
+            posP = curr.getP2pos()+0.1
+            if posB<posP:
+                a2=-1
+            elif posB==posP:
+                a2=0
+            else:
+                a2=1
             # Get next state
             nexts = curr.nextstate(a, a2)
             nextd = nexts.getDiscreteState()
             nextind = getindex(nextd)
             # Get current learning rate
-            alpha = C / (C + N[ind, a + 1])
-            # TD update
-            Q[ind, a + 1] = Q[ind, a + 1] + alpha * (curr.rd + gamma * max(Q[nextind, :]) - Q[ind, a + 1])
-            N[ind, a + 1] = N[ind, a + 1] + 1
+            if nextind != ind:
+                alpha = C / (C + N[ind, a + 1])
+                # TD update
+                Q[ind, a + 1] = Q[ind, a + 1] + alpha * (curr.rd + gamma * max(Q[nextind, :]) - Q[ind, a + 1])
+                N[ind, a + 1] = N[ind, a + 1] + 1
             # Re-assign curr
             curr = nexts
             curd = nextd
@@ -257,7 +264,7 @@ if __name__ == '__main__':
             curd = curr.getDiscreteState()
             a = np.argmax(Q[getindex(curd), :]) - 1
             posB = curr.getBallpos()
-            posP = curr.getP2pos()
+            posP = curr.getP2pos()+0.1
             if posB<posP:
                 a2=-1
             elif posB==posP:
@@ -278,11 +285,13 @@ if __name__ == '__main__':
     print('Counts for diff. number of bounces:', end='')
     print(Counter(num_bounce))
     print('The average number of bouncing is %f' % np.mean(num_bounce))
+    # Print ball position and pannel_y2
+
     # Draw best solution
     fig = plt.figure()
     ims = []
     for s in bestplay:
-        ims.append(plt.plot([s.bx], [1 - s.by], 'ro', [1, 1], [0.8 - s.py, 1 - s.py], linewidth=6.0))
+        ims.append(plt.plot([s.bx], [1 - s.by], 'ro', [1, 1], [0.8 - s.py, 1 - s.py], [0,0], [0.8 - s.py2, 1 - s.py2], linewidth=6.0))
     im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=True)
     plt.axis([0, 1, 0, 1])
     plt.show()
