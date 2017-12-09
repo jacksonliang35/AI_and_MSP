@@ -17,7 +17,6 @@ class Pongcontstate:
             # ===========================================
             self.py2 = py2  # paddle position
             # ===========================================
-            self.rd = rd
         else:
             self.bx = -1
             self.by = -1
@@ -25,7 +24,7 @@ class Pongcontstate:
             self.vy = -1
             self.py = -1
             self.py2 = -1
-            self.rd = -1
+        self.rd = rd
         self.bounce = bounce
         # ===========================================
         self.bounce2 = bounce2
@@ -38,11 +37,11 @@ class Pongcontstate:
     def getP2pos(self):
         return self.py2
 
-    def getCurrentFrame(self):
-        fig = plt.figure()
-        plt.plot([self.bx], [1 - self.by], 'ro', [1, 1], [0.8 - self.py, 1 - self.py], linewidth=5.0)
-        plt.show()
-        return
+    # def getCurrentFrame(self):
+    #     fig = plt.figure()
+    #     plt.plot([self.bx], [1 - self.by], 'ro', [1, 1], [0.8 - self.py, 1 - self.py], linewidth=5.0)
+    #     plt.show()
+    #     return
 
     def getDiscreteState(self):
         return Pongdiscstate(self.bx, self.by, self.vx, self.vy, self.py, self.py2, self.rd)
@@ -70,8 +69,10 @@ class Pongcontstate:
         if new_bx < 0:  # check if has been bounced back by the second panel
             cross = self.by + (0 - self.bx) * self.vy / self.vx
             if cross < self.py2 or cross > self.py2 + 0.2:
+                reward = 1
                 end = True
             else:
+                reward = -1
                 new_bounce2 += 1
                 new_bx = -new_bx
                 new_vx = max(0.03, -new_vx + 0.03 * random.random() - 0.015)
@@ -84,8 +85,10 @@ class Pongcontstate:
             # Check whether bouncing onto panel
             cross = self.by + (1 - self.bx) * self.vy / self.vx
             if cross < self.py or cross > self.py + 0.2:
+                reward = -1
                 end = True
             else:
+                reward = 1
                 new_bounce += 1
                 new_bx = 2 - new_bx
                 new_vx = min(-0.03, -new_vx + 0.03 * random.random() - 0.015)
@@ -166,21 +169,21 @@ class Pongdiscstate:
     # ===========================================
     def hasfinished2(self):
         return self.py2 < 0
-        # ===========================================
+    # ===========================================
 
 
-def getindex(state):
-    # type(state) = Pongdiscstate
-    # action = {-1,0,1}
-    if state.hasfinished():
-        return 12 * 12 * 2 * 3 * 12  # bx*by*vx*vy*py
-    else:
-        raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py]
-        size = [12, 12, 2, 3, 12]
-        ind = raw_ind[0]
-        for i in range(1, 6):
-            ind = ind * size[i] + raw_ind[i]
-        return ind
+# def getindex(state):
+#     # type(state) = Pongdiscstate
+#     # action = {-1,0,1}
+#     if state.hasfinished():
+#         return 12 * 12 * 2 * 3 * 12  # bx*by*vx*vy*py
+#     else:
+#         raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py]
+#         size = [12, 12, 2, 3, 12]
+#         ind = raw_ind[0]
+#         for i in range(1, 6):
+#             ind = ind * size[i] + raw_ind[i]
+#         return ind
 
 
 # ===============================================
@@ -214,15 +217,18 @@ if __name__ == '__main__':
     # Train
     C = 5
     gamma = 0.9
-    num_train = 10000
+    num_train = 1000
     Q = np.zeros((12 * 12 * 2 * 3 * 12 * 12 + 1, 3))  # Action-utility
     N = np.zeros((12 * 12 * 2 * 3 * 12 * 12 + 1, 3))  # State-action frequency
     for i in range(num_train):
         # Play game
         curr = Pongcontstate()
         curd = curr.getDiscreteState()
-        ind = getindex(curd)
-        while not curr.hasfinished():
+        ind = getindex2(curd)
+        rrr = 0
+        while not curr.hasfinished() and rrr < 100000:
+            if curr.rd!=0:
+                rrr += 1
             a = np.argmax(fexplore(Q[ind, :].copy(), N[ind, :])) - 1  # {-1,0,1}
             posB = curr.getBallpos()
             posP = curr.getP2pos()+0.1
@@ -235,7 +241,7 @@ if __name__ == '__main__':
             # Get next state
             nexts = curr.nextstate(a, a2)
             nextd = nexts.getDiscreteState()
-            nextind = getindex(nextd)
+            nextind = getindex2(nextd)
             # Get current learning rate
             if nextind != ind:
                 alpha = C / (C + N[ind, a + 1])
@@ -249,20 +255,23 @@ if __name__ == '__main__':
         # end TD update
         Q[ind, a + 1] = Q[ind, a + 1] + alpha * (curr.rd - Q[ind, a + 1])
         N[ind, a + 1] = N[ind, a + 1] + 1
-        if i % 10000 == 0:
-            print('Training Process: %d%%...' % (i // 1000))
+        if i % (num_train//10) == 0:
+            print(i//(num_train//100))
     #############################################
     print('Training Completed. Start testing...')
     # Test & Display
-    num_test = 1000
+    num_test = 10
     num_bounce = np.zeros(num_test)
     best = -1
     for t in range(num_test):
         curr = Pongcontstate()
         play = [curr]
-        while not curr.hasfinished():
+        rrr = 0
+        while not curr.hasfinished() and rrr < 100000:
+            if curr.rd!=0:
+                rrr += 1
             curd = curr.getDiscreteState()
-            a = np.argmax(Q[getindex(curd), :]) - 1
+            a = np.argmax(Q[getindex2(curd), :]) - 1
             posB = curr.getBallpos()
             posP = curr.getP2pos()+0.1
             if posB<posP:
@@ -278,20 +287,16 @@ if __name__ == '__main__':
         if curr.bounce > best:
             best = curr.bounce
             bestplay = play
-        if t % 100 == 0:
-            print('Testing Process: %d%%...' % (t // 10))
     # Print average bouncing
     print('Testing Completed.')
     print('Counts for diff. number of bounces:', end='')
     print(Counter(num_bounce))
     print('The average number of bouncing is %f' % np.mean(num_bounce))
-    # Print ball position and pannel_y2
-
     # Draw best solution
     fig = plt.figure()
     ims = []
     for s in bestplay:
         ims.append(plt.plot([s.bx], [1 - s.by], 'ro', [1, 1], [0.8 - s.py, 1 - s.py], [0,0], [0.8 - s.py2, 1 - s.py2], linewidth=6.0))
-    im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=True)
+    im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=False)
     plt.axis([0, 1, 0, 1])
     plt.show()
