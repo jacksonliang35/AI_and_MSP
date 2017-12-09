@@ -51,7 +51,7 @@ class Pongcontstate:
             return True
         return False
 
-    def nextstate(self, action, action2):
+    def nextstate(self, action, action2,train=False):
         # action = {-1,0,1} = {up,stay,down}
         end = False
         new_bx = self.bx + self.vx
@@ -68,15 +68,14 @@ class Pongcontstate:
         # ===========================================
         if new_bx < 0:  # check if has been bounced back by the second panel
             cross = self.by + (0 - self.bx) * self.vy / self.vx
-            if cross < self.py2 or cross > self.py2 + 0.2:
+            if (cross >= self.py2 and cross <= self.py2+0.2) or train:
                 reward = 1
-                end = True
-            else:
-                reward = -1
                 new_bounce2 += 1
                 new_bx = -new_bx
                 new_vx = max(0.03, -new_vx + 0.03 * random.random() - 0.015)
                 new_vy = new_vy + 0.06 * random.random() - 0.03
+            else:
+                end = True
         # ===========================================
         if new_by > 1:
             new_by = 2 - new_by
@@ -88,7 +87,6 @@ class Pongcontstate:
                 reward = -1
                 end = True
             else:
-                reward = 1
                 new_bounce += 1
                 new_bx = 2 - new_bx
                 new_vx = min(-0.03, -new_vx + 0.03 * random.random() - 0.015)
@@ -172,37 +170,20 @@ class Pongdiscstate:
     # ===========================================
 
 
-# def getindex(state):
-#     # type(state) = Pongdiscstate
-#     # action = {-1,0,1}
-#     if state.hasfinished():
-#         return 12 * 12 * 2 * 3 * 12  # bx*by*vx*vy*py
-#     else:
-#         raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py]
-#         size = [12, 12, 2, 3, 12]
-#         ind = raw_ind[0]
-#         for i in range(1, 6):
-#             ind = ind * size[i] + raw_ind[i]
-#         return ind
-
-
-# ===============================================
-
-def getindex2(state):
+def getindex(state):
     # type(state) = Pongdiscstate
     # action = {-1,0,1}
     if state.hasfinished():
-        return 12 * 12 * 2 * 3 * 12 * 12  # bx*by*vx*vy*py*py2
+        return 12 * 12 * 2 * 3 * 12  # bx*by*vx*vy*py
     else:
-        raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py, state.py2]
-        size = [12, 12, 2, 3, 12, 12]
+        raw_ind = [state.bx, state.by, (state.vx + 1) // 2, (state.vy + 1), state.py]
+        size = [12, 12, 2, 3, 12]
         ind = raw_ind[0]
-        for i in range(1, 6):
+        for i in range(1, 5):
             ind = ind * size[i] + raw_ind[i]
         return ind
 
 
-# ===============================================
 def fexplore(q, n):
     # For exploration purposes
     # Call w/ Q[ind,:].copy()
@@ -217,31 +198,28 @@ if __name__ == '__main__':
     # Train
     C = 5
     gamma = 0.9
-    num_train = 10000
-    Q = np.zeros((12 * 12 * 2 * 3 * 12 * 12 + 1, 3))  # Action-utility
-    N = np.zeros((12 * 12 * 2 * 3 * 12 * 12 + 1, 3))  # State-action frequency
+    num_train = 100000
+    Q = np.zeros((12 * 12 * 2 * 3 * 12 + 1, 3))  # Action-utility
+    N = np.zeros((12 * 12 * 2 * 3 * 12 + 1, 3))  # State-action frequency
     for i in range(num_train):
         # Play game
         curr = Pongcontstate()
         curd = curr.getDiscreteState()
-        ind = getindex2(curd)
-        rrr = 0
-        while not curr.hasfinished() and rrr < 50000:
-            if curr.rd!=0:
-                rrr += 1
+        ind = getindex(curd)
+        while not curr.hasfinished():
             a = np.argmax(fexplore(Q[ind, :].copy(), N[ind, :])) - 1  # {-1,0,1}
-            posB = curr.getBallpos()
-            posP = curr.getP2pos()+0.1
-            if posB<posP:
-                a2=-1
-            elif posB==posP:
-                a2=0
-            else:
-                a2=1
+            # posB = curr.getBallpos()
+            # posP = curr.getP2pos()+0.1
+            # if posB<posP:
+            #    a2=-1
+            # elif posB==posP:
+            #    a2=0
+            # else:
+            #    a2=1
             # Get next state
-            nexts = curr.nextstate(a, a2)
+            nexts = curr.nextstate(a,0,True)
             nextd = nexts.getDiscreteState()
-            nextind = getindex2(nextd)
+            nextind = getindex(nextd)
             # Get current learning rate
             if nextind != ind:
                 alpha = C / (C + N[ind, a + 1])
@@ -256,23 +234,20 @@ if __name__ == '__main__':
         Q[ind, a + 1] = Q[ind, a + 1] + alpha * (curr.rd - Q[ind, a + 1])
         N[ind, a + 1] = N[ind, a + 1] + 1
         if i % (num_train//10) == 0:
-            print(i//(num_train//100))
+            print('Training %d%% completed...' % (i//(num_train//100)))
     #############################################
     print('Training Completed. Start testing...')
     # Test & Display
-    num_test = 50
+    num_test = 1000
     num_bounce = np.zeros(num_test)
     best = -1
     win = np.zeros(num_test)
     for t in range(num_test):
         curr = Pongcontstate()
         play = [curr]
-        rrr = 0
-        while not curr.hasfinished() and rrr < 50000:
-            if curr.rd!=0:
-                rrr += 1
+        while not curr.hasfinished():
             curd = curr.getDiscreteState()
-            a = np.argmax(Q[getindex2(curd), :]) - 1
+            a = np.argmax(Q[getindex(curd), :]) - 1
             posB = curr.getBallpos()
             posP = curr.getP2pos()+0.1
             if posB<posP:
@@ -284,10 +259,10 @@ if __name__ == '__main__':
             curr = curr.nextstate(a, a2)
             play.append(curr)
         num_bounce[t] = curr.bounce
-        if curr.rd == 1:
+        if curr.bounce>curr.bounce2:
             win[t] = 1
         # Save best for display
-        if curr.bounce > best:
+        if curr.bounce > best and win[t]==1:
             best = curr.bounce
             bestplay = play
     # Print average bouncing
