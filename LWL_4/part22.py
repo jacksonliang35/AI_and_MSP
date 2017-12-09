@@ -32,8 +32,11 @@ class Pongcontstate:
         # ===========================================
         return
 
-    def getBalldir(self):
-        return self.vy
+    def getBallpos(self):
+        return self.by
+
+    def getP2pos(self):
+        return self.py2
 
     def getCurrentFrame(self):
         fig = plt.figure()
@@ -253,7 +256,14 @@ if __name__ == '__main__':
         while not curr.hasfinished():
             curd = curr.getDiscreteState()
             a = np.argmax(Q[getindex(curd), :]) - 1
-            a2 = np.sign(curr.getBalldir())
+            posB = curr.getBallpos()
+            posP = curr.getP2pos()
+            if posB<posP:
+                a2=-1
+            elif posB==posP:
+                a2=0
+            else:
+                a2=1
             curr = curr.nextstate(a, a2)
             play.append(curr)
         num_bounce[t] = curr.bounce
