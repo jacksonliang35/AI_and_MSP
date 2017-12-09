@@ -60,3 +60,5 @@ Avg bouncing: 9.571000
 Avg bouncing: 7.989000
 (C,gamma,R,Ne)=(5,0.900000,0.300000,10)
 Avg bouncing: 9.800000
+(C,gamma,R,Ne)=(5,0.900000,0.400000,10)
+Avg bouncing: 9.726000
