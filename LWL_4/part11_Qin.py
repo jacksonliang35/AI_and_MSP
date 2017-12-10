@@ -62,7 +62,7 @@ if __name__ == '__main__':
     for t in range(epochs):
         alpha = 1/((t+1)**2)
         for idx in trainset:
-            train_result = np.argmax(np.sign(np.dot(w,idx.val.flatten())+b))
+            train_result = np.argmax(np.dot(w,idx.val.flatten())+b)
             w[train_result,:] = w[train_result,:]-alpha*idx.val.flatten()
             b[train_result] = b[train_result] - alpha*1.0
             w[idx.lab,:] = w[idx.lab,:] + alpha*idx.val.flatten()
@@ -76,8 +76,8 @@ if __name__ == '__main__':
         probidx =[[],[],[],[],[],[],[],[],[],[]]
         for testidx in testset:
             # Classify
-            classify = np.argmax(np.sign(np.dot(w,testidx.val.flatten())+b))
-            val = max(np.sign(np.dot(w,testidx.val.flatten())+b))
+            classify = np.argmax(np.dot(w,testidx.val.flatten())+b)
+            val = max(np.dot(w,testidx.val.flatten())+b)
             probval[classify].append(val)
             probimg[classify].append(testidx)
             probidx[classify].append(i)
