@@ -198,7 +198,7 @@ if __name__ == '__main__':
     # Train
     C = 5
     gamma = 0.9
-    num_train = 100000
+    num_train = 10000
     Q = np.zeros((12 * 12 * 2 * 3 * 12 + 1, 3))  # Action-utility
     N = np.zeros((12 * 12 * 2 * 3 * 12 + 1, 3))  # State-action frequency
     for i in range(num_train):
@@ -231,6 +231,7 @@ if __name__ == '__main__':
             curd = nextd
             ind = nextind
         # end TD update
+        alpha = C / (C + N[ind, a + 1])
         Q[ind, a + 1] = Q[ind, a + 1] + alpha * (curr.rd - Q[ind, a + 1])
         N[ind, a + 1] = N[ind, a + 1] + 1
         if i % (num_train//10) == 0:
@@ -271,6 +272,7 @@ if __name__ == '__main__':
     print(Counter(num_bounce))
     print('The average number of bouncing is %f' % np.mean(num_bounce))
     print('The percentage of winning is %f%%' % float(100*np.sum(win)/num_test))
+    print(win)
     # Draw best solution
     fig = plt.figure()
     ims = []

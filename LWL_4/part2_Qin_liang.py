@@ -55,7 +55,6 @@ class Pongcontstate:
         if new_bx < 0:
             new_bx = -new_bx
             new_vx = -new_vx
-            reward = 1
         if new_by > 1:
             new_by = 2-new_by
             new_vy = -new_vy
@@ -69,6 +68,7 @@ class Pongcontstate:
                 new_bx = 2-new_bx
                 new_vx = min(-0.03,-new_vx + 0.03*random.random()-0.015)
                 new_vy = new_vy + 0.06*random.random()-0.03
+                reward = 1
         # Action
         new_py = self.py + action*(0.04)
         if new_py > 0.8:
@@ -85,6 +85,7 @@ class Pongdiscstate:
             self.by = -1
             self.vx = -1
             self.vy = -1
+            self.vxy = -1
             self.py = -1
         else:
             # discretize ball position
@@ -100,14 +101,21 @@ class Pongdiscstate:
             if vx>0:
                 self.vx = 1
             else:
-                self.vx = -1
+                self.vx = 0
             # velocity_y
             if vy >= 0.015:
                 self.vy = 1
-            elif vy <= -0.015:
-                self.vy = -1
-            else:
+            elif vy > -0.015:
                 self.vy = 0
+            else:
+                self.vy = -1
+            cross = by + (1-bx)*vy/vx
+            if cross < 0:
+                self.vxy = -1
+            elif cross <= 1:
+                self.vxy = 0
+            else:
+                self.vxy = 1
             # discretize pannel_y
             if py >= 0.8:
                 self.py = 11
@@ -121,12 +129,12 @@ def getindex(state):
     # type(state) = Pongdiscstate
     # action = {-1,0,1}
     if state.hasfinished():
-        return 12*12*2*3*12    # bx*by*vx*vy*py
+        return 12*12*2*3*3*12    # bx*by*vx*vy*py
     else:
-        raw_ind = [state.bx,state.by,(state.vx+1)//2,(state.vy+1),state.py]
-        size = [12,12,2,3,12]
+        raw_ind = [state.bx,state.by,state.vx,(state.vy+1),state.vxy+1,state.py]
+        size = [12,12,2,3,3,12]
         ind = raw_ind[0]
-        for i in range(1,5):
+        for i in range(1,6):
             ind = ind * size[i] + raw_ind[i]
         return ind
 def fexplore(q,n,Ne,R):
@@ -142,9 +150,9 @@ if __name__ == '__main__':
     C = 5
     R = 0.3
     Ne = 10
-    num_train = 100000
-    Q = np.zeros((12*12*2*3*12+1,3))    # Action-utility
-    N = np.zeros((12*12*2*3*12+1,3))    # State-action frequency
+    num_train = 20000
+    Q = np.zeros((12*12*2*3*3*12+1,3))    # Action-utility
+    N = np.zeros((12*12*2*3*3*12+1,3))    # State-action frequency
     start = time.time()
     for i in range(num_train):
         # Play game
@@ -168,17 +176,18 @@ if __name__ == '__main__':
             curd = nextd
             ind = nextind
         # end TD update
+        alpha = C/(C+N[ind,a+1])
         Q[ind,a+1] = Q[ind,a+1] + alpha*(curr.rd - Q[ind,a+1])
         N[ind,a+1] = N[ind,a+1] + 1
-        if i % 10000 == 0:
-            print('Training Process: %d%%...' % (i//1000))
+        if i % (num_train//10) == 0:
+            print('Training %d%% completed...' % (i//(num_train//100)))
     ############################################
     end = time.time()
     print('Training Completed. Start testing...')
     # Test & Display
     num_test = 1000
     num_bounce = np.zeros(num_test)
-    worst = 10000000
+    worst = 100000
     for t in range(num_test):
         curr = Pongcontstate()
         play = [curr]
@@ -196,9 +205,8 @@ if __name__ == '__main__':
     print('Testing Completed.')
     print('Counts for diff. number of bounces:',end='')
     print(Counter(num_bounce).most_common())
-    print('(C,gamma,R,Ne)=(%d,%f,%f,%d)' % (C,gamma,R,Ne))
     print('Avg bouncing: %f' % np.mean(num_bounce))
-    print('Training time: %fms' % (end-start))
+    print('Training time: %fs' % (end-start))
     # Draw worst solution
     fig = plt.figure()
     ims = []
