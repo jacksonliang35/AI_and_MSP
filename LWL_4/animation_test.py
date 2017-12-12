@@ -9,3 +9,4 @@ for add in range(20):
 im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=True)
 plt.axis([0,1,0,1])
 plt.show()
+im_ani.save('./test.mp4')

@@ -85,7 +85,6 @@ class Pongdiscstate:
             self.by = -1
             self.vx = -1
             self.vy = -1
-            self.vxy = -1
             self.py = -1
         else:
             # discretize ball position
@@ -109,13 +108,6 @@ class Pongdiscstate:
                 self.vy = 0
             else:
                 self.vy = -1
-            cross = by + (1-bx)*vy/vx
-            if cross < 0:
-                self.vxy = -1
-            elif cross <= 1:
-                self.vxy = 0
-            else:
-                self.vxy = 1
             # discretize pannel_y
             if py >= 0.8:
                 self.py = 11
@@ -129,12 +121,12 @@ def getindex(state):
     # type(state) = Pongdiscstate
     # action = {-1,0,1}
     if state.hasfinished():
-        return 12*12*2*3*3*12    # bx*by*vx*vy*py
+        return 12*12*2*3*12    # bx*by*vx*vy*py
     else:
-        raw_ind = [state.bx,state.by,state.vx,(state.vy+1),state.vxy+1,state.py]
-        size = [12,12,2,3,3,12]
+        raw_ind = [state.bx,state.by,state.vx,(state.vy+1),state.py]
+        size = [12,12,2,3,12]
         ind = raw_ind[0]
-        for i in range(1,6):
+        for i in range(1,5):
             ind = ind * size[i] + raw_ind[i]
         return ind
 def fexplore(q,n,Ne,R):
@@ -150,9 +142,9 @@ if __name__ == '__main__':
     C = 5
     R = 0.3
     Ne = 10
-    num_train = 20000
-    Q = np.zeros((12*12*2*3*3*12+1,3))    # Action-utility
-    N = np.zeros((12*12*2*3*3*12+1,3))    # State-action frequency
+    num_train = 100000
+    Q = np.zeros((12*12*2*3*12+1,3))    # Action-utility
+    N = np.zeros((12*12*2*3*12+1,3))    # State-action frequency
     start = time.time()
     for i in range(num_train):
         # Play game
@@ -187,7 +179,7 @@ if __name__ == '__main__':
     # Test & Display
     num_test = 1000
     num_bounce = np.zeros(num_test)
-    worst = 100000
+    best = -1
     for t in range(num_test):
         curr = Pongcontstate()
         play = [curr]
@@ -198,20 +190,21 @@ if __name__ == '__main__':
             play.append(curr)
         num_bounce[t] = curr.bounce
         # Save best for display
-        if curr.bounce < worst:
-            worst = curr.bounce
-            worstplay = play
+        if curr.bounce > best:
+            best = curr.bounce
+            bestplay = play
     # Print average bouncing
     print('Testing Completed.')
-    print('Counts for diff. number of bounces:',end='')
-    print(Counter(num_bounce).most_common())
+    # print('Counts for diff. number of bounces:',end='')
+    # print(Counter(num_bounce).most_common())
     print('Avg bouncing: %f' % np.mean(num_bounce))
     print('Training time: %fs' % (end-start))
     # Draw worst solution
     fig = plt.figure()
     ims = []
-    for s in worstplay:
+    for s in bestplay:
         ims.append(plt.plot([s.bx],[1-s.by],'ro',[1,1],[0.8-s.py,1-s.py],linewidth=6.0))
     im_ani = anim.ArtistAnimation(fig, ims, interval=50, repeat_delay=3000, blit=False)
     plt.axis([0,1,0,1])
     plt.show()
+    im_ani.save('./best_performance.mp4')
