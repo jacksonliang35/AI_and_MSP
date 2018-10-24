@@ -1,0 +1,10 @@
+The corresponding k is:0.1      The overall accuracy is: 0.773
+The corresponding k is:0.2      The overall accuracy is: 0.773
+The corresponding k is:0.3      The overall accuracy is: 0.773
+The corresponding k is:0.4      The overall accuracy is: 0.773
+The corresponding k is:0.5      The overall accuracy is: 0.772
+The corresponding k is:1        The overall accuracy is: 0.771
+The corresponding k is:2        The overall accuracy is: 0.768
+The corresponding k is:3        The overall accuracy is: 0.766
+The corresponding k is:5        The overall accuracy is: 0.757
+The corresponding k is:10       The overall accuracy is: 0.751
