@@ -8,10 +8,10 @@ This repo contains all CS440 (Intro to Artificial Intelligence) and ECE417 (Mult
 .
 |--- CS440
 |   |--- MP
-|   |  |--- MP1
-|   |  |--- MP2
-|   |  |--- MP3
-|   |  |--- MP4
+|   |  |--- LWL_1 (MP1)
+|   |  |--- LWL_2 (MP2)
+|   |  |--- LWL_3 (MP3)
+|   |  |--- LWL_4 (MP4)
 |   |
 |   |--- Report
 |      |--- CS440_MP1_report.pdf
