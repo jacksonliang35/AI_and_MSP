@@ -1,0 +1,161 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{gensymb}
+\usepackage{float}
+\usepackage[top=1in, bottom=1in, left=1in, right=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage{wrapfig}
+\usepackage{array}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{ragged2e}
+\usepackage[hidelinks]{hyperref}
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\makeatother
+\graphicspath{ {Data/} }
+\begin{document}
+	\everymath{\displaystyle}
+	\begin{titlepage}	 	
+		\center
+		\text{}\\[3cm]
+		\linespread{2}\huge \bfseries MP2: Principal Component Analysis (PCA)\\ K-Nearest Neighbors (KNN)
+		\center\textsc{\Large ECE 417 Fall 2017}\\[1cm]
+		\Large\center\textsc{Weicheng Jiang \\Yuchen Liang\\ Zixu Zhang  }\\[1.5cm]
+		\Large \today\\
+		\vfill
+	\end{titlepage}
+	%\tableofcontents\newpage
+	\setlength{\baselineskip}{24pt}
+	
+	\section{Introduction}
+	
+	In this MP, the experimented feature vectors are the ones obtained from principal component analysis (PCA). The results are compared to those obtained from raw image pixels and from random orthogonal vectors (random projection). In the result, PCA feature vectors appear far more effective than either of raw pixels or random projection. The intuitive reason behind the scene is that PCA produces uncorrelated feature vectors that align in the direction of those main “patterns” of the image, while the raw pixel vectors have high correlation that make the underlying image “patterns” hard to decompose, and the random projection vectors, though have no correlation, make incorrect guesses of the underlying main “patterns”. The classifying algorithm used in the MP is k-nearest-neighbor (kNN), which is not exactly a learning algorithm because it memorizes all of the (projected) images. It learns the position of the training images in the projected space and classify the test data as the closest k neighbors in the space.
+	
+	\section{Method}
+	\subsection{Principal Component Analysis (PCA)}
+	The file \texttt{ calc\_PCA.m} contains all of the calculation needed for PCA. Specifically, line 4 to 13 describes the process to obtain the PCA basis vectors for the set of images. The mathematical deduction is below.\\
+	Given a set of $M$ data vectors, $\mathbf{x_1, x_2, \cdots, x_M}\in\mathbb{R}^{N\times1}$, which we refer as observation vectors. Therefore, we can use an unbiased estimator to obtain the sample covariance matrix as:
+	\begin{equation}
+	\Sigma = \frac{1}{M-1} \sum_{i=1}^{M}(\mathbf{x_i}.-\bar{\mathbf{x}})(\mathbf{x}_i.-\bar{\mathbf{x}})^T
+	\end{equation}
+	Then, we find the eigen-decomposition of $\Sigma$ (in order of descending eigenvalues) to find the orthogonal eigenvectors matrix $U\in\mathbb{R}^{6300\times6300}$, whereby the PCA of each observation vector $\mathbf{x_i}$ as:
+	\begin{equation}
+	\mathbf{y_i}=U^T(\mathbf{x_i}-\bar{\mathbf{x}})
+	\end{equation} However, only the first $6300\times80$ submatrix of $U$ is valuable for the reason below. In this MP, since there are at most 80 samples each with at most 6300 dimensions, only the first 80 eigenvectors will form a projection space, while the rest 6220 eigenvectors are from the null space.\\
+	To enhance efficiency, we utilize the following mathematical trick in our calculation. We first find the Gram matrix: 
+	\begin{equation}
+	\Gamma = \frac{1}{M-1} \sum_{i=1}^{M}(\mathbf{x_i}.-\bar{\mathbf{x}})^T(\mathbf{x}_i.-\bar{\mathbf{x}})
+	\end{equation}
+	The eigen-decomposition of $\Gamma$ wil give an orthogonal matrix V and corresponding eigenvalue $k_i$ of each eigenvector. From singular value decomposition (SVD), we claim that the normalized data matrix an be decomposed as
+	 \begin{equation}
+	 \tilde{X} =\frac{1}{\sqrt{M-1}}(\mathbf{x_i}-\bar{\mathbf{x}})=USV^T
+	 \end{equation}  
+	 where, $\tilde{X}\in\mathbb{R}^{6300\times80},~U\in\mathbb{R}^{6300\times80},~ S\in\mathbb{R}^{80\times80},~ V\in\mathbb{R}^{80\times80}$, and $S$ is a diagnoal matrix with $s_{ii}=\sqrt{k_i}$.\\
+	 In this way, it is much easier to obtain the left eigenvector matrix of the data matrix as 
+	 \begin{equation}
+	 U=\tilde{X} VS^{-1}
+	 \end{equation}
+     A further step to reduce the dimensionality, we can take the top $N$ eigenvectors, whose eigenvalues compose $95\%$ of the energy of PCA (sum of eigenvalues). In this case, our PCA projected data $\mathbb{y}_i$ can reduce its dimension from $\mathbb{R}^{80\times1}$ to $\mathbb{R}^{N\times1}$.\\
+     
+     \subsection{k-Nearest Neighbor (kNN)}  
+     The files \texttt{knn.m} and \texttt{findlabel.m} contains all of the calculation for the kNN classifier. It classifies the test data as the same label that appears for its nearest $k$ neighbors. Mathematically, given $M$ training sample each with $N$ dimensions, each with label $l_1, l_2, \cdots, l_b$, denote each sample as $\mathbf{x_i}$ of length $N$, and define our distance for measurement in line 7 as the Euclidean distance squared
+      \begin{equation}
+     d_2(\mathbf{x_i},\mathbf{x_j})^2 = ||\mathbf{x_i}-\mathbf{x_j}||^2
+     \end{equation}
+      For a test data $\mathbf{x}_\text{test}$, we want to find $k$ indexes, say $a_1, a_2, \cdots , a_k$, that give the k smallest $d_2(\mathbf{x}_\text{test},\mathbf{x_i})^2$ value, where $1\leq i\leq M$. Then we label $\mathbf{x}_\text{test}$ as the label $l_m$ that appear the most times in the label set $\{l(\mathbf{x_{a_1}}), l(\mathbf{x_{a_2}}),\cdots, l(\mathbf{x_{a_k}})\}$, where $l(\mathbf{x_i})$ represents the label of $\mathbf{x_i}$. This operation is done in \texttt{findlabel.m}, which is invoked in line 9 to 13 in \texttt{knn.m}. \\
+      
+      \section{Reuslts}
+      The table \ref{tab:1nn} shows the accuracy for 1-NN search with set of 80 data samples provided, and the table \ref{tab:5nn} shows the accuracy for 5-NN test.
+      \begin{table}[H]
+      	\centering
+      	\caption{1-Nearest Neighbor Search Accuracy Table}
+      	\label{tab:1nn}
+      	\begin{tabular}{|c|c|c|c|c|c|c|}
+      		\hline
+      		\%  & \begin{tabular}[c]{@{}c@{}}Raw\\ $[70\times90]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}Raw\\ $[35\times45]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}Raw\\ $[17\times22]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}Raw\\ $[7\times9]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}PCA\\  $95\%$\end{tabular} & Random \\ \hline
+      		A   & 100                                                          & 100                                                          & 100                                                          & 100                                                        & 100                                                   & 100    \\ \hline
+      		B   & 75                                                           & 75                                                           & 80                                                           & 100                                                        & 75                                                    & 75     \\ \hline
+      		C   & 80                                                           & 85                                                           & 90                                                           & 95                                                         & 80                                                    & 60     \\ \hline
+      		D   & 100                                                          & 100                                                          & 100                                                          & 100                                                        & 100                                                   & 85     \\ \hline
+      		Ave & 88.75                                                        & 90                                                           & 92.5                                                         & 98.75                                                      & 88.75                                                 & 80     \\ \hline
+      	\end{tabular}
+      \end{table}
+  
+  	\begin{table}[H]
+  		\centering
+  		\caption{5-Nearest Neighbor Search Accuracy Table}
+  		\label{tab:5nn}
+  		\begin{tabular}{|c|c|c|c|c|c|c|}
+  			\hline
+  			\%  & \begin{tabular}[c]{@{}c@{}}Raw\\ $[70\times90]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}Raw\\ $[35\times45]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}Raw\\ $[17\times22]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}Raw\\ $[7\times9]$\end{tabular} & \begin{tabular}[c]{@{}c@{}}PCA\\ $95\%$\end{tabular} & Random \\ \hline
+  			A   & 100                                                          & 100                                                          & 100                                                          & 100                                                        & 100                                                  & 100    \\ \hline
+  			B   & 80                                                           & 80                                                           & 85                                                           & 90                                                         & 70                                                   & 60     \\ \hline
+  			C   & 45                                                           & 45                                                           & 45                                                           & 55                                                         & 40                                                   & 45     \\ \hline
+  			D   & 95                                                           & 90                                                           & 95                                                           & 85                                                         & 95                                                   & 85     \\ \hline
+  			Ave & 80                                                           & 78.75                                                        & 81.25                                                        & 82.5                                                       & 76.25                                                & 72.5   \\ \hline
+  		\end{tabular}
+  	\end{table}
+  
+	\justify The table \ref{tab:1nn_energy} shows the effects of PCA energy on the accuracy of 1-NN and 5-NN search.
+\begin{table}[H]
+	\centering
+	\caption{1-NN and 5-NN
+		 Search Accuracy Table for PCA with Different Energy}
+	\label{tab:1nn_energy}
+	\begin{tabular}{|c|c|c|c|c|c|c|}
+		\hline
+		\multirow{2}{*}{\%} & \multicolumn{3}{l|}{1-NN}                                                                                                                                          & \multicolumn{3}{l|}{5-NN}                                                                                                                                          \\ \cline{2-7} 
+		& \begin{tabular}[c]{@{}l@{}}PCA\\ $90\%$\end{tabular} & \begin{tabular}[c]{@{}l@{}}PCA\\ $95\%$\end{tabular} & \begin{tabular}[c]{@{}l@{}}PCA\\ $98\%$\end{tabular} & \begin{tabular}[c]{@{}l@{}}PCA\\ $90\%$\end{tabular} & \begin{tabular}[c]{@{}l@{}}PCA\\ $95\%$\end{tabular} & \begin{tabular}[c]{@{}l@{}}PCA\\ $98\%$\end{tabular} \\ \hline
+		A                   & 100                                                  & 100                                                  & 100                                                  & 100                                                  & 100                                                  & 100                                                  \\ \hline
+		B                   & 75                                                   & 75                                                   & 75                                                   & 55                                                   & 70                                                   & 75                                                   \\ \hline
+		C                   & 80                                                   & 80                                                   & 80                                                   & 35                                                   & 40                                                   & 40                                                   \\ \hline
+		D                   & 100                                                  & 100                                                  & 100                                                  & 100                                                  & 95                                                   & 95                                                   \\ \hline
+		Ave                 & 88.75                                                & 88.75                                                & 88.75                                                & 72.5                                                 & 76.25                                                & 77.5                                                 \\ \hline
+	\end{tabular}
+  \end{table}
+
+\justify The table \ref{tab:1nn_rand} and \ref{tab:5nn_rand} shows accuracy of 1-NN and 5-NN search, after 10 trails for random projection matrix. 
+\begin{table}[H]
+	\centering
+	\caption{1-Nearest Neighbor Search Accuracy Table for 10 Random Projection Matrix}
+	\label{tab:1nn_rand}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		\%  & Run 1 & Run 2 & Run 3 & Run 4 & Run 5 & Run 6 & Run 7 & Run 8 & Run 9 & Run 10 & Ave    \\ \hline
+		A   & 100   & 100   & 95    & 100   & 100   & 100   & 95    & 90    & 100   & 100    & 98     \\ \hline
+		B   & 80    & 65    & 85    & 75    & 60    & 75    & 60    & 80    & 75    & 75     & 73     \\ \hline
+		C   & 75    & 60    & 70    & 70    & 80    & 75    & 70    & 95    & 85    & 70     & 75     \\ \hline
+		D   & 95    & 85    & 90    & 90    & 90    & 95    & 75    & 90    & 80    & 75     & 86.5   \\ \hline
+		Ave & 87.5  & 77.5  & 85    & 83.75 & 82.5  & 86.25 & 75    & 88.75 & 85    & 80     & 83.125 \\ \hline
+	\end{tabular}
+\end{table}
+
+\begin{table}[H]
+	\centering
+	\caption{5-Nearest Neighbor Search Accuracy Table for 10 Random Projection Matrix}
+	\label{tab:5nn_rand}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		\%  & Run 1 & Run 2 & Run 3 & Run 4 & Run 5 & Run 6 & Run 7 & Run 8 & Run 9 & Run 10 & Ave  \\ \hline
+		A   & 90    & 95    & 100   & 100   & 95    & 100   & 85    & 85    & 100   & 100    & 95   \\ \hline
+		B   & 70    & 60    & 75    & 75    & 50    & 80    & 60    & 70    & 70    & 55     & 66.5 \\ \hline
+		C   & 35    & 40    & 25    & 60    & 30    & 60    & 40    & 30    & 35    & 30     & 38.5 \\ \hline
+		D   & 95    & 75    & 95    & 85    & 90    & 85    & 80    & 85    & 70    & 80     & 84   \\ \hline
+		Ave & 72.5  & 67.5  & 73.75 & 80    & 66.25 & 81.25 & 66.25 & 67.5  & 68.75 & 66.25  & 71   \\ \hline
+	\end{tabular}
+\end{table}
+
+\section{Discussion}
+In the result, different features provide different accuracies. The random projection features have the lowest average accuracies for both 1-NN and 5-NN, because the random guess in the underlying patterns to be projected on can easily go wrong. The reason that the PCA (95\% energy) has lower accuracy than raw pixels for both classifiers is that the test data is too similar to several parts of the training data that over-fitting occurs. Within each classifier, the average accuracy decreases as raw pixel size increases, because additional dimensionality in the data make the data points sparse and thus hard to classify (i.e. curse of dimensionality).\\
+Different classifiers also result in different accuracies. For any feature, 1-NN performs better than 5-NN, due to the fact that our data set is so small (only 19-20 samples for a label) that the second through fifth nearest neighbor introduces unnecessary classification errors.\\
+The increase in PCA energy has a positive effect on average accuracies using 5-NN, while it has totally no effect when using 1-NN. This is because the given data set is so similar with such a small size, that the change in PCA energy (i.e. relevant to loss of dimensions) does not change the top closest training data, which is already really close due to over-fitting, but gives a higher chance for other training data of the same face to reach the second through fifth closest positions.
+
+		
+		
+
+\end{document}

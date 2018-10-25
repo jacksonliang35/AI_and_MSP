@@ -1,0 +1,10 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Method}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Hidden Markov Model}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Forward Variable}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Backward Variable}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Forward-Backward Procedure}{section.2}% 6
+\BOOKMARK [3][-]{subsubsection.2.4.1}{Calculating the Probability of an Observation Sequence}{subsection.2.4}% 7
+\BOOKMARK [3][-]{subsubsection.2.4.2}{Training an HMM}{subsection.2.4}% 8
+\BOOKMARK [1][-]{section.3}{Result}{}% 9
+\BOOKMARK [1][-]{section.4}{Discussion}{}% 10

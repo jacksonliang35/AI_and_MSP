@@ -1,0 +1,1 @@
+[P0_a2,A_a2,mu_a2,sigma_a2] = ghmm_learn(Audio_data(1,:),N,A_init);

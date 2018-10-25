@@ -1,8 +1,10 @@
 # AI_and_MSP
 
-Dear Prof. Johnson,
+Dear Prof. Hasegawa-Johnson,
 
 This repo contains all CS440 (Intro to Artificial Intelligence) and ECE417 (Multimedia Signal Processing) materials (i.e. MPs, report, ...), in Fall 2017. The repo is constructed in the following structure:
+
+## Structure
 
 ```
 .
